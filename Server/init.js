@@ -52,6 +52,32 @@ function initDB() {
     return db;
 }
 
+// 📂MultiMediaPlayer為本專案資料
+
+//基本結構
+//📂Upper folder
+// ├── 📂Video
+// │   ├── 📂video1
+// │   │   ├── video1.mp4
+// │   │   └── video1.jpg
+// │   ├── 📂video2
+// │   │   ├── 📂S1
+// │   │   │   ├── video2_E1.mp4
+// │   │   │   └── video2_E2.mp4
+// │   │   ├── 📂S2
+// │   │   |   ├── video2_E1.mp4
+// │   │   |   └── video2_E2.mp4
+// │   │   └── video2.jpg
+// │   └── video3.mp4
+// ├── 📂Music
+// │   ├── 📂專輯名稱
+// │   │   ├── 歌曲名稱1.mp3
+// │   │   └── 歌曲名稱2.mp3
+// │   ├── music1.mp3
+// │   └── music2.mp3
+// └── 📂MultiMediaPlayer
+
+
 async function classifyMedia(db){
     const upperfolder = path.join(__dirname, '..', '..');
     const videoFolder = path.join(upperfolder, 'Video');
@@ -82,17 +108,20 @@ async function classifyMedia(db){
                 const substats = await fs.stat(subfolderpath);
                 if (substats.isDirectory()) {
                     // 如果是資料夾，則是系列影片
+                    const seriesPath = subfolderpath;
+                    classifyVideoSeries(db, seriesPath, folder);
+
                 } else {
                     // 如果是檔案，則是單影片
-                    const filePath = path.join(folderpath, subfolder);
-                    await classifyVideo(db, filePath, folder);
+                    const filePath = subfolderpath;
+                    classifyVideo(db, filePath, folder);
                 }
             }
         }
         else {
             // 如果是檔案，則是單影片
             const filePath = path.join(videoFolder, folder);
-            await classifyVideo(db, filePath, folder);
+            classifyVideo(db, filePath, folder);
         }
     }
 }
@@ -135,4 +164,12 @@ async function classifyVideo(db, filePath, folder) {
         }
     }
     
+}
+
+function classifyVideoSeries(db, seriesPath, folder) {
+
+
+
+
+
 }
