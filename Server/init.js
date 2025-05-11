@@ -3,22 +3,23 @@ import path from 'path';
 import sqlite from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename); 
+const __dirname = path.dirname(__filename);
 
-export async function init(){
-   const db = initDB();
-   await classifyMedia(db);
+export async function init() {
+    const db = initDB();
+    await classifyMedia(db);
 
-        
+
 }
 
 function initDB() {
-    const db = new sqlite('media.db', { verbose: console.log });
+    const db = new sqlite('media.db');
 
+    db.pragma('foreign_keys = ON');
     // 刪除舊的表（如果存在）
     db.exec(`
-        DROP TABLE IF EXISTS videos;
         DROP TABLE IF EXISTS video_series;
+        DROP TABLE IF EXISTS videos;
         DROP TABLE IF EXISTS music;
     `);
 
@@ -29,6 +30,7 @@ function initDB() {
             name TEXT NOT NULL,
             path TEXT NOT NULL UNIQUE,
             type TEXT NOT NULL,
+            total_episodes INTEGER DEFAULT 0,
             poster TEXT NOT NULL
         );
 
@@ -37,8 +39,8 @@ function initDB() {
             from_video_id INTEGER,
             path TEXT,
             season TEXT,
-            episode TEXT,
-            FOREIGN KEY (from_video_id) REFERENCES videos(id)
+            episode INTEGER,
+            FOREIGN KEY (from_video_id) REFERENCES videos(id) ON DELETE CASCADE
         );
 
         CREATE TABLE music (
@@ -55,9 +57,9 @@ function initDB() {
 // 📂MultiMediaPlayer為本專案資料
 
 //基本結構
-//📂Upper folder
+// 📂Upper folder
 // ├── 📂Video
-// │   ├── 📂video1
+// │   ├── 📂video1      ✔️
 // │   │   ├── video1.mp4
 // │   │   └── video1.jpg
 // │   ├── 📂video2
@@ -68,7 +70,10 @@ function initDB() {
 // │   │   |   ├── video2_E1.mp4
 // │   │   |   └── video2_E2.mp4
 // │   │   └── video2.jpg
-// │   └── video3.mp4
+// │   ├── 📂video3
+// │   │   ├── video3_E1.mp4
+// │   │   └── video3_E2.mp4
+// │   └── video3.mp4        ✔️
 // ├── 📂Music
 // │   ├── 📂專輯名稱
 // │   │   ├── 歌曲名稱1.mp3
@@ -78,26 +83,26 @@ function initDB() {
 // └── 📂MultiMediaPlayer
 
 
-async function classifyMedia(db){
+async function classifyMedia(db) {
     const upperfolder = path.join(__dirname, '..', '..');
     const videoFolder = path.join(upperfolder, 'Video');
     const musicFolder = path.join(upperfolder, 'Music');
 
-    try{
+    try {
         await fs.access(videoFolder);
     }
-    catch{
-        await fs.mkdir(videoFolder, {recursive: true});
+    catch {
+        await fs.mkdir(videoFolder, { recursive: true });
     }
-    try{
+    try {
         await fs.access(musicFolder);
     }
-    catch{
-        await fs.mkdir(musicFolder, {recursive: true});
+    catch {
+        await fs.mkdir(musicFolder, { recursive: true });
     }
 
     //分類影片
-    const folders = await fs.readdir(videoFolder);
+    const folders = await fs.readdir(videoFolder); //
     for (const folder of folders) {
         const folderpath = path.join(videoFolder, folder);
         const stats = await fs.stat(folderpath);
@@ -109,27 +114,79 @@ async function classifyMedia(db){
                 if (substats.isDirectory()) {
                     // 如果是資料夾，則是系列影片
                     const seriesPath = subfolderpath;
-                    classifyVideoSeries(db, seriesPath, folder);
+                    let video = db.prepare('SELECT name FROM videos WHERE name = ?').get(folder);
+
+                    if (video !== undefined) {
+                        console.log('Video already exists in database:', video.name);
+                        db.prepare('UPDATE videos SET path = @path WHERE name = @name').run({ name: folder, path: seriesPath });
+                    } else {
+                        console.log('Inserting video into database:', folder);
+                        db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
+                    }
+                    let season = subfolder;
+                    classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
 
                 } else {
-                    // 如果是檔案，則是單影片
+                    // 如果是檔案，有可能是單影片或series影片的海報
                     const filePath = subfolderpath;
-                    classifyVideo(db, filePath, folder);
+                    const fileExt = path.extname(filePath).toLowerCase();
+
+                    const videoFiles = subfolders.filter(file => {
+                        const ext = path.extname(file).toLowerCase();
+                        return ext === '.mp4' || ext === '.mkv' || ext === '.avi';
+                    });
+
+                    // 只有一個影片檔案 => 單影片
+                    // 多個影片檔案 => 系列影片
+                    // 沒有影片檔案 => 系列影片的海報
+
+                    // 如果只有一個影片檔案，則是單影片
+                    if (videoFiles.length == 1) {
+                        classifyVideo(db, filePath, folder, true);
+                    }
+
+                    // 如果有多個影片檔案，則是系列影片
+                    else if (videoFiles.length > 1) {
+
+                        //檢查是否已經存在，存在代表已把全部集數放入資料庫
+                        const video = db.prepare('SELECT name FROM videos WHERE name = ?').get(folder);
+                        if (video === undefined) {
+                            const seriesPath = folderpath;
+                            db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
+                            let season = "NONE";
+                            classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    // 如果沒有影片檔案，則是系列影片的海報
+                    else if (videoFiles.length == 0) {
+                        
+                        const seriesPath = subfolderpath;
+                        const fileExt = path.extname(folder).toLowerCase();
+                        if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp')
+                            PutInSeriesPoster(db, seriesPath, folder);
+
+                    }
+
                 }
             }
         }
         else {
             // 如果是檔案，則是單影片
             const filePath = path.join(videoFolder, folder);
-            classifyVideo(db, filePath, folder);
+            classifyVideo(db, filePath, path.basename(folder, path.extname(folder)), false);
         }
     }
 }
 
 
-async function classifyVideo(db, filePath, folder) {
-    const fileName = path.basename(filePath);
-    const fileExt = path.extname(fileName).toLowerCase();
+async function classifyVideo(db, filePath, folder, have_Folder = false) {
+
+    const fileName = folder;
+
+    const fileExt = path.extname(filePath).toLowerCase();
     const search_name = db.prepare('SELECT name FROM videos WHERE name = ?');
     const insert_video = db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)');
     const update_poster = db.prepare('UPDATE videos SET poster = @poster WHERE name = @name');
@@ -139,14 +196,14 @@ async function classifyVideo(db, filePath, folder) {
         console.log('Found video file:', fileName);
 
         // 使用檔案路徑作為唯一標識
-        
+
         const video = search_name.get(folder);
         if (video !== undefined) {
             console.log('Video already exists in database:', video.name);
-            update_video.run({name: folder, path: filePath});
+            update_video.run({ name: folder, path: filePath });
         } else {
             console.log('Inserting video into database:', fileName);
-            insert_video.run({name: folder, path: filePath, type: 'video', poster: '-1'});
+            insert_video.run({ name: folder, path: filePath, type: 'video', poster: '-1' });
         }
     }
 
@@ -157,19 +214,69 @@ async function classifyVideo(db, filePath, folder) {
         const video = search_name.get(folder);
         if (video !== undefined) {
             console.log('Poster already exists in database:', video.name);
-            update_poster.run({name: folder, poster: filePath});
+            update_poster.run({ name: folder, poster: filePath });
         } else {
             console.log('Inserting poster into database:', fileName);
-            insert_video.run({name: folder, path: '-1', type: 'video', poster: filePath});
+            insert_video.run({ name: folder, path: '-1', type: 'video', poster: filePath });
         }
     }
-    
+
 }
 
-function classifyVideoSeries(db, seriesPath, folder) {
+function PutInSeriesPoster(db, filePath, folder) {
+    const search_name = db.prepare('SELECT name FROM videos WHERE name = ?');
+    const update_poster = db.prepare('UPDATE videos SET poster = @poster WHERE name = @name');
+    const insert_poster = db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)');
 
+    const video = search_name.get(folder);
+    if (video !== undefined) {
+        console.log('From putinposter Video already exists in database:', video.name);
+        update_poster.run({ name: folder, poster: filePath });
+    } else {
+        console.log('Inserting poster into database:', folder);
+        insert_poster.run({ name: folder, path: '-1', type: 'series', poster: filePath });
+    }
+}
 
+// 季資料夾處理
+async function classifyVideoSeries(db, seriesPath, folder, season) {
 
+    const seriesname = folder;
+    let seasonFolder = seriesPath;
+
+    const search_video_id = db.prepare('SELECT id FROM videos WHERE name = ?');
+    const insert_video_series = db.prepare('INSERT INTO video_series (from_video_id, path, season, episode) VALUES (@from_video_id,@path,@season,@episode)');
+
+    let seasonFiles = await fs.readdir(seriesPath);
+
+    // 排序檔案名稱（字典順序）
+    const sortedFiles = seasonFiles
+        .filter(file => {
+            // 過濾出影片檔案
+            const fileExt = path.extname(file).toLowerCase();
+            return fileExt === '.mp4' || fileExt === '.mkv' || fileExt === '.avi';
+        })
+        .sort((a, b) => a.localeCompare(b)); // 按字典順序排序
+
+    let total_episodes = sortedFiles.length;
+    const update_total_episodes = db.prepare('UPDATE videos SET total_episodes = @total_episodes WHERE name = @name');
+    update_total_episodes.run({ name: seriesname, total_episodes: total_episodes });
+    const insert_series = db.transaction((files) => {
+
+        files.forEach((file, index) => {
+            const filePath = path.join(seasonFolder, file);
+
+            insert_video_series.run({
+                from_video_id: search_video_id.get(seriesname).id,
+                path: filePath,
+                season: season,
+                episode: index + 1
+            });
+        });
+    });
+
+    insert_series(sortedFiles);
+    console.log('Inserted series videos into database:', seriesname, season);
 
 
 }
