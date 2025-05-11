@@ -29,7 +29,7 @@ function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode })
           </li>
         </Link>        
         ))}
-        <li id="dark-mode-toggle" onClick={onToggleDarkMode}>
+        <li id="dark-mode-toggle" className="sidebar-link" onClick={onToggleDarkMode}>
           <img
             src={isDarkMode ? '/icons/sun.svg' : '/icons/moon.svg'}
             className="icon"

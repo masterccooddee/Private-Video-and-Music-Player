@@ -67,12 +67,6 @@ body.dark-mode {
   color: inherit;
 }
 
-.sidebar li:hover {
-  background-color: rgba(255,255,255,0.1);
-}
-body.dark-mode .sidebar li:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
 .sidebar.collapsed li span {
   display: none;
 }
@@ -160,4 +154,22 @@ body.dark-mode #toggle-btn .icon {
   align-items: center;
   color: inherit;
   text-decoration: none;
+}
+
+/* ======== 暗色模式 ======== */
+body.dark-mode .sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* 滑過背景 */
+}
+
+body.dark-mode .sidebar-link.active {
+  background-color: rgba(255, 255, 255, 0.2); /* 選中背景 */
+}
+
+/* ======== 淺色模式 ======== */
+body.light-mode .sidebar-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .sidebar-link.active {
+  background-color: rgba(0, 0, 0, 0.1);
 }
