@@ -1,32 +1,44 @@
-import React, { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
+import HomePage from './pages/HomePage'
+import RankPage from './pages/RankPage'
+import TagPage from './pages/TagPage'
+import FavoritesPage from './pages/FavoritesPage'
+import UploadPage from './pages/UploadPage'
+import ProfilePage from './pages/ProfilePage'
+import LoginPage from './pages/LoginPage'
+import { useState, useEffect } from 'react'
 
-function App() {
+export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
-  const toggleDarkMode = () => setIsDarkMode(prev => !prev)
-  const toggleSidebar = () => setIsSidebarCollapsed(prev => !prev)
+  useEffect(() => {
+    document.body.classList.remove('dark-mode', 'light-mode')
+    document.body.classList.add(isDarkMode ? 'dark-mode' : 'light-mode')
+  }, [isDarkMode])
 
   return (
-    <div className={isDarkMode ? 'dark-mode' : 'light-mode'}>
-      <div className="container">
-        <Sidebar
-          isDarkMode={isDarkMode}
-          isCollapsed={isSidebarCollapsed}
-          onToggleSidebar={toggleSidebar}
-          onToggleDarkMode={toggleDarkMode}
-        />
-        <main className="main-content">
-          <Topbar />
-          <div className="content">
-            <p>主內容區</p>
-          </div>
-        </main>
-      </div>
+    <div className="container">
+      <Sidebar
+        isDarkMode={isDarkMode}
+        isCollapsed={isSidebarCollapsed}
+        onToggleSidebar={() => setIsSidebarCollapsed(prev => !prev)}
+        onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+      />
+      <main className="main-content">
+        <Topbar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/rank" element={<RankPage />} />
+          <Route path="/tag" element={<TagPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </main>
     </div>
   )
 }
-
-export default App

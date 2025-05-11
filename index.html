@@ -1,72 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>影音資料庫</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body class="light-mode">
-  <div class="container">
-
-    <!-- 側邊欄 -->
-    <aside class="sidebar expanded" id="sidebar">
-      <div class="sidebar-header">
-        <button id="toggle-btn">
-          <img src="icons/menu.svg" alt="menu" class="icon">
-        </button>
-        <span class="logo-text">影音資料庫</span>
-      </div>
-      <ul>
-        <li><img src="icons/home.svg" class="icon"><span>首頁</span></li>
-        <li><img src="icons/rank.svg" class="icon"><span>排行榜</span></li>
-        <li><img src="icons/tag.svg" class="icon"><span>標籤</span></li>
-        <li><img src="icons/thumb_up.svg" class="icon"><span>我的收藏</span></li>
-        <li><img src="icons/upload.svg" class="icon"><span>上傳資源</span></li>
-        <li><img src="icons/user.svg" class="icon"><span>個人中心</span></li>
-        <li><img src="icons/login.svg" class="icon"><span>登入 / 註冊</span></li>
-        <li id="dark-mode-toggle">
-          <img src="icons/moon.svg" class="icon" id="theme-icon" alt="切換主題">
-          <span id="dark-mode-text">夜間模式</span>
-        </li>
-      </ul>
-    </aside>
-
-    <!-- 主內容 -->
-    <main class="main-content">
-      <div class="topbar">
-        <h1>歡迎來到影音資料庫</h1>
-        <input type="text" placeholder="搜尋影片...">
-      </div>
-      <div class="content">
-        <p>這裡是主內容區（可以放影片卡片、篩選器等）</p>
-      </div>
-    </main>
-
-  </div>
-
-  <script>
-    const sidebar = document.getElementById("sidebar");
-    const toggleBtn = document.getElementById("toggle-btn");
-    const darkToggleItem = document.getElementById("dark-mode-toggle");
-    const body = document.body;
-    const darkText = document.getElementById("dark-mode-text");
-    const themeIcon = document.getElementById("theme-icon");
-
-    toggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("collapsed");
-      sidebar.classList.toggle("expanded");
-    });
-
-    darkToggleItem.addEventListener("click", () => {
-      const isDark = body.classList.contains("dark-mode");
-      body.classList.toggle("dark-mode");
-      body.classList.toggle("light-mode");
-
-      // 切換文字與 icon 圖
-      darkText.textContent = isDark ? "夜間模式" : "日間模式";
-      themeIcon.src = isDark ? "icons/moon.svg" : "icons/sun.svg";
-    });
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>影音資料庫</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

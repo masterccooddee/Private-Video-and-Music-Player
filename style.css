@@ -153,3 +153,11 @@ body.dark-mode #toggle-btn .icon {
   cursor: pointer;
   padding: 0;
 }
+
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}

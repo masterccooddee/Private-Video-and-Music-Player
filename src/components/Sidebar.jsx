@@ -1,13 +1,14 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const navItems = [
-  { icon: 'home.svg', text: '首頁' },
-  { icon: 'rank.svg', text: '排行榜' },
-  { icon: 'tag.svg', text: '標籤' },
-  { icon: 'thumb_up.svg', text: '我的收藏' },
-  { icon: 'upload.svg', text: '上傳資源' },
-  { icon: 'user.svg', text: '個人中心' },
-  { icon: 'login.svg', text: '登入 / 註冊' }
+  { icon: 'home.svg', text: '首頁', to: '/' },
+  { icon: 'rank.svg', text: '排行榜', to: '/rank' },
+  { icon: 'tag.svg', text: '標籤', to: '/tag' },
+  { icon: 'thumb_up.svg', text: '我的收藏', to: '/favorites' },
+  { icon: 'upload.svg', text: '上傳資源', to: '/upload' },
+  { icon: 'user.svg', text: '個人中心', to: '/profile' },
+  { icon: 'login.svg', text: '登入 / 註冊', to: '/login' }
 ]
 
 function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode }) {
@@ -22,8 +23,10 @@ function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode })
       <ul>
         {navItems.map((item, i) => (
           <li key={i}>
-            <img src={`/icons/${item.icon}`} className="icon" />
-            <span>{item.text}</span>
+            <Link to={item.to} className="sidebar-link">
+              <img src={`/icons/${item.icon}`} className="icon" />
+              <span>{item.text}</span>
+            </Link>
           </li>
         ))}
         <li id="dark-mode-toggle" onClick={onToggleDarkMode}>
