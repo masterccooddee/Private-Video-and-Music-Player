@@ -10,7 +10,7 @@ export async function init() {
     const db = initDB();
     await classifyMedia(db);
 
-
+    
 }
 
 function initDB() {
@@ -157,15 +157,20 @@ async function classifyMedia(db) {
                             let season = 'NONE';
                             classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
                         }
-                        else {
+                        else{
                             continue;
+                        }
+
+                        if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
+                            PutInSeriesPoster(db, filePath, folder);
+                            console.log('Found poster file:', folder);
                         }
                     }
                     // 如果沒有影片檔案，則是系列影片的海報
                     else if (videoFiles.length == 0) {
 
                         const seriesPath = subfolderpath;
-                        const fileExt = path.extname(folder).toLowerCase();
+                        const fileExt = path.extname(seriesPath).toLowerCase();
                         if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp')
                             PutInSeriesPoster(db, seriesPath, folder);
 
