@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import sqlite from 'better-sqlite3';
 import { fileURLToPath } from 'url';
+import { json } from 'stream/consumers';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -30,7 +31,7 @@ function initDB() {
             name TEXT NOT NULL,
             path TEXT NOT NULL UNIQUE,
             type TEXT NOT NULL,
-            total_episodes INTEGER DEFAULT 0,
+            total_episodes TEXT,
             poster TEXT NOT NULL
         );
 
@@ -153,7 +154,7 @@ async function classifyMedia(db) {
                         if (video === undefined) {
                             const seriesPath = folderpath;
                             db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
-                            let season = "NONE";
+                            let season = 'NONE';
                             classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
                         }
                         else {
@@ -162,7 +163,7 @@ async function classifyMedia(db) {
                     }
                     // 如果沒有影片檔案，則是系列影片的海報
                     else if (videoFiles.length == 0) {
-                        
+
                         const seriesPath = subfolderpath;
                         const fileExt = path.extname(folder).toLowerCase();
                         if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp')
@@ -258,9 +259,22 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
         })
         .sort((a, b) => a.localeCompare(b)); // 按字典順序排序
 
-    let total_episodes = sortedFiles.length;
-    const update_total_episodes = db.prepare('UPDATE videos SET total_episodes = @total_episodes WHERE name = @name');
-    update_total_episodes.run({ name: seriesname, total_episodes: total_episodes });
+    let total_episodes = db.prepare('SELECT total_episodes FROM videos WHERE name = ?').get(seriesname);
+    console.log('total_episodes:', total_episodes);
+    let episodes = {};
+    if (total_episodes.total_episodes === null) {
+        episodes[`${season}`] = sortedFiles.length;
+        db.prepare('UPDATE videos SET total_episodes = @total_episodes WHERE name = @name').run({ name: seriesname, total_episodes: JSON.stringify(episodes) });
+    }
+    else {
+        let total_episodes_json = JSON.parse(total_episodes.total_episodes);
+
+        total_episodes_json[`${season}`] = sortedFiles.length;
+        db.prepare('UPDATE videos SET total_episodes = @total_episodes WHERE name = @name').run({ name: seriesname, total_episodes: JSON.stringify(total_episodes_json) });
+
+    }
+
+
     const insert_series = db.transaction((files) => {
 
         files.forEach((file, index) => {
