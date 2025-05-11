@@ -22,12 +22,12 @@ function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode })
       </div>
       <ul>
         {navItems.map((item, i) => (
-          <li key={i}>
-            <Link to={item.to} className="sidebar-link">
-              <img src={`/icons/${item.icon}`} className="icon" />
-              <span>{item.text}</span>
-            </Link>
+          <Link to={item.to} className="sidebar-link" key={i}>
+          <li>
+            <img src={`/icons/${item.icon}`} className="icon" />
+            <span>{item.text}</span>
           </li>
+        </Link>        
         ))}
         <li id="dark-mode-toggle" onClick={onToggleDarkMode}>
           <img
