@@ -90,33 +90,11 @@ body.dark-mode .sidebar li .icon {
   transition: background 0.3s;
 }
 
-/* 頂部欄 */
-.topbar {
-  background-color: white;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.topbar input {
-  padding: 0.5em;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
 /* 夜間模式色調 */
 body.dark-mode .sidebar {
   background-color: #111;
 }
-body.dark-mode .topbar {
-  background-color: #333;
-}
-body.dark-mode .topbar input {
-  background-color: #222;
-  color: white;
-  border: 1px solid #555;
-}
+
 body.dark-mode .main-content {
   background-color: #1e1e1e;
 }

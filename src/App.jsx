@@ -1,6 +1,7 @@
+// App.jsx
 import { Routes, Route } from 'react-router-dom'
-import Sidebar from './components/Sidebar'
-import Topbar from './components/Topbar'
+import Sidebar from './components/Sidebar/Sidebar'
+import Topbar from './components/Topbar/Topbar'
 import HomePage from './pages/HomePage'
 import RankPage from './pages/RankPage'
 import TagPage from './pages/TagPage'
@@ -28,7 +29,7 @@ export default function App() {
         onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
       />
       <main className="main-content">
-        <Topbar />
+        <Topbar isDarkMode={isDarkMode} />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/rank" element={<RankPage />} />
