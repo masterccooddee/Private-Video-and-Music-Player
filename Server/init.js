@@ -2,15 +2,28 @@ import fs from 'fs/promises';
 import path from 'path';
 import sqlite from 'better-sqlite3';
 import { fileURLToPath } from 'url';
-import { json } from 'stream/consumers';
+import dotenv from 'dotenv';
+dotenv.config();
+import axios from 'axios';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export async function init() {
     const db = initDB();
+    // 初始化影片資料庫
     await classifyMedia(db);
+    // 如果影片資料庫沒poster，有TMDB API KEY，則下載海報
+    const tmdb_key = process.env.TMDB_KEY;
+    if (tmdb_key !== undefined) {
+        console.log('TMDB_KEY is defined, starting poster finding.');
+        await findPosterFromTMDB(db, tmdb_key);
+    }
+    else {
+        console.log('TMDB_KEY is undefined, skipping poster finding.');
+    }
 
-    
+
 }
 
 function initDB() {
@@ -47,7 +60,8 @@ function initDB() {
         CREATE TABLE music (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
-            path TEXT
+            path TEXT,
+            cover BLOB
         );
     `);
 
@@ -103,7 +117,8 @@ async function classifyMedia(db) {
     }
 
     //分類影片
-    const folders = await fs.readdir(videoFolder); //
+    const folders = await fs.readdir(videoFolder);
+    console.log('Total folders', folders.length);
     for (const folder of folders) {
         const folderpath = path.join(videoFolder, folder);
         const stats = await fs.stat(folderpath);
@@ -125,7 +140,7 @@ async function classifyMedia(db) {
                         db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
                     }
                     let season = subfolder;
-                    classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
+                    await classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
 
                 } else {
                     // 如果是檔案，有可能是單影片或series影片的海報
@@ -143,7 +158,7 @@ async function classifyMedia(db) {
 
                     // 如果只有一個影片檔案，則是單影片
                     if (videoFiles.length == 1) {
-                        classifyVideo(db, filePath, folder, true);
+                        await classifyVideo(db, filePath, folder, true);
                     }
 
                     // 如果有多個影片檔案，則是系列影片
@@ -155,9 +170,9 @@ async function classifyMedia(db) {
                             const seriesPath = folderpath;
                             db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
                             let season = 'NONE';
-                            classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
+                            await classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
                         }
-                        else{
+                        else {
                             continue;
                         }
 
@@ -218,12 +233,13 @@ async function classifyVideo(db, filePath, folder, have_Folder = false) {
 
         // 使用檔案路徑作為唯一標識
         const video = search_name.get(folder);
+        const posterpath = '/' + folder + '/' + path.basename(filePath);
         if (video !== undefined) {
             console.log('Poster already exists in database:', video.name);
-            update_poster.run({ name: folder, poster: filePath });
+            update_poster.run({ name: folder, poster: posterpath });
         } else {
             console.log('Inserting poster into database:', fileName);
-            insert_video.run({ name: folder, path: '-1', type: 'video', poster: filePath });
+            insert_video.run({ name: folder, path: '-1', type: 'video', poster: posterpath });
         }
     }
 
@@ -235,12 +251,13 @@ function PutInSeriesPoster(db, filePath, folder) {
     const insert_poster = db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)');
 
     const video = search_name.get(folder);
+    const posterpath = '/' + folder + '/' + path.basename(filePath);
     if (video !== undefined) {
         console.log('From putinposter Video already exists in database:', video.name);
-        update_poster.run({ name: folder, poster: filePath });
+        update_poster.run({ name: folder, poster: posterpath });
     } else {
         console.log('Inserting poster into database:', folder);
-        insert_poster.run({ name: folder, path: '-1', type: 'series', poster: filePath });
+        insert_poster.run({ name: folder, path: '-1', type: 'series', poster: posterpath });
     }
 }
 
@@ -250,7 +267,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
     const seriesname = folder;
     let seasonFolder = seriesPath;
 
-    const search_video_id = db.prepare('SELECT id FROM videos WHERE name = ?');
+    const search_video_id = db.prepare('SELECT id FROM videos WHERE name = ?', { cached: true });
     const insert_video_series = db.prepare('INSERT INTO video_series (from_video_id, path, season, episode) VALUES (@from_video_id,@path,@season,@episode)');
 
     let seasonFiles = await fs.readdir(seriesPath);
@@ -279,6 +296,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
 
     }
 
+    const f_v_id = search_video_id.get(seriesname).id;
 
     const insert_series = db.transaction((files) => {
 
@@ -286,7 +304,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
             const filePath = path.join(seasonFolder, file);
 
             insert_video_series.run({
-                from_video_id: search_video_id.get(seriesname).id,
+                from_video_id: f_v_id,
                 path: filePath,
                 season: season,
                 episode: index + 1
@@ -298,4 +316,48 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
     console.log('Inserted series videos into database:', seriesname, season);
 
 
+}
+
+async function findPosterFromTMDB(db, tmdb_key) {
+
+    const allVideos = db.prepare('SELECT * FROM videos').all();
+    const allSeries = allVideos.filter(video => video.poster === '-1');
+    const videoname = allSeries.map(video => video.name);
+
+    for (const name of videoname) {
+        const poster_url = await getPosterFromTMDB(name, tmdb_key);
+        if (poster_url !== null) {
+            db.prepare('UPDATE videos SET poster = @poster WHERE name = @name').run({ name: name, poster: poster_url });
+            console.log('Updated poster URL for video:', name);
+        } else {
+            console.log('Poster URL is null for video:', name);
+        }
+    }
+
+
+}
+
+async function getPosterFromTMDB(videoname, tmdb_key) {
+    try {
+        const response = await axios.get('https://api.themoviedb.org/3/search/multi', {
+            params: {
+                query: videoname,
+                included_adult: true,
+                language: 'zh-TW',
+                page: 1
+            },
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${tmdb_key}`
+            }
+
+        });
+        let poster_url = 'https://image.tmdb.org/t/p/original' + response.data.results[0].poster_path;
+        console.log('Poster URL:', poster_url);
+        return poster_url;
+    }
+    catch (error) {
+        console.error('Error fetching data from TMDB:', error);
+        return null;
+    }
 }

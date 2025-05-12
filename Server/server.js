@@ -11,7 +11,8 @@ await init()
     });
 
 const app = express();
-app.use(express.static('public'));
+app.use('/',express.static('../public'));
+app.use('/Video',express.static('../../Video'));
 // app.use(express.static('dist'))
 
 app.listen(3000, () => {

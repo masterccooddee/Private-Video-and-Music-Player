@@ -12,6 +12,7 @@ dist
 dist-ssr
 media.db
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
