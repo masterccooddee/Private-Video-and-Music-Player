@@ -20,67 +20,10 @@ body.dark-mode {
   height: 100vh;
 }
 
-.sidebar {
-  background-color: #edeff1;
-  transition: width 0.3s;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.sidebar.expanded {
-  width: 200px;
-}
-.sidebar.collapsed {
-  width: 60px;
-}
-
-.sidebar .sidebar-header {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-}
-.sidebar .sidebar-header button {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
 .logo-text {
   margin-left: 10px;
   font-weight: bold;
   font-size: 1.1rem;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.sidebar li {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.sidebar,
-.sidebar .logo-text,
-.sidebar li span {
-  color: inherit;
-}
-
-.sidebar.collapsed li span {
-  display: none;
-}
-
-/* 圖示處理 */
-.sidebar li .icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  transition: filter 0.3s;
-  filter: invert(0);
-}
-body.dark-mode .sidebar li .icon {
-  filter: invert(1);
 }
 
 /* 主區塊 */
@@ -90,64 +33,8 @@ body.dark-mode .sidebar li .icon {
   transition: background 0.3s;
 }
 
-/* 夜間模式色調 */
-body.dark-mode .sidebar {
-  background-color: #111;
-}
-
 body.dark-mode .main-content {
   background-color: #1e1e1e;
 }
 
-/* 切換按鈕 */
-#toggle-btn .icon {
-  width: 20px;
-  height: 20px;
-  filter: invert(0);
-}
-body.dark-mode #toggle-btn .icon {
-  filter: invert(1);
-}
-.sidebar.collapsed .logo-text {
-  display: none;
-}
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  gap: 0.5rem;       
-}
-#toggle-btn {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
 
-
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  color: inherit;
-  text-decoration: none;
-}
-
-/* ======== 暗色模式 ======== */
-body.dark-mode .sidebar-link:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* 滑過背景 */
-}
-
-body.dark-mode .sidebar-link.active {
-  background-color: rgba(255, 255, 255, 0.2); /* 選中背景 */
-}
-
-/* ======== 淺色模式 ======== */
-body.light-mode .sidebar-link:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-body.light-mode .sidebar-link.active {
-  background-color: rgba(0, 0, 0, 0.1);
-}

@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import styles from './Sidebar.module.css'
 
 const navItems = [
   { icon: 'home.svg', text: '首頁', to: '/' },
@@ -12,27 +13,31 @@ const navItems = [
 ]
 
 function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode }) {
+  const location = useLocation()
+
   return (
-    <aside className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
-      <div className="sidebar-header">
-        <button id="toggle-btn" onClick={onToggleSidebar}>
-          <img src="/icons/menu.svg" className="icon" />
+    <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : styles.expanded} ${isDarkMode ? styles.darkMode : ''}`}>
+      <div className={styles.sidebarHeader}>
+        <button id="toggle-btn" className={styles.toggleBtn} onClick={onToggleSidebar}>
+          <img src="/icons/menu.svg" className={styles.icon} />
         </button>
-        <span className="logo-text">影音資料庫</span>
+        <span className={styles.logoText}>影音資料庫</span>
       </div>
-      <ul>
+      <ul className={styles.navList}>
         {navItems.map((item, i) => (
-          <Link to={item.to} className="sidebar-link" key={i}>
-          <li>
-            <img src={`/icons/${item.icon}`} className="icon" />
+          <Link
+            to={item.to}
+            className={`${styles.sidebarLink} ${location.pathname === item.to ? styles.active : ''}`}
+            key={i}
+          >
+            <img src={`/icons/${item.icon}`} className={styles.icon} />
             <span>{item.text}</span>
-          </li>
-        </Link>        
+          </Link>
         ))}
-        <li id="dark-mode-toggle" className="sidebar-link" onClick={onToggleDarkMode}>
+        <li className={styles.sidebarLink} onClick={onToggleDarkMode}>
           <img
             src={isDarkMode ? '/icons/sun.svg' : '/icons/moon.svg'}
-            className="icon"
+            className={styles.icon}
           />
           <span>{isDarkMode ? '日間模式' : '夜間模式'}</span>
         </li>

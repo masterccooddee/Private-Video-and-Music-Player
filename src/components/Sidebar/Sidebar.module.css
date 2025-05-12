@@ -1,0 +1,89 @@
+.sidebar {
+  background-color: #edeff1;
+  transition: width 0.3s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.expanded {
+  width: 200px;
+}
+
+.collapsed {
+  width: 60px;
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  transition: filter 0.3s;
+  filter: invert(0);
+}
+
+.logoText {
+  margin-left: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.sidebarLink:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.collapsed .logoText,
+.collapsed .sidebarLink span {
+  display: none;
+}
+
+/* 暗色模式 */
+.darkMode {
+  background-color: #111;
+}
+
+.darkMode .sidebarLink:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.darkMode .active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.darkMode .icon {
+  filter: invert(1);
+}
