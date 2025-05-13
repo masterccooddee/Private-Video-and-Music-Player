@@ -8,6 +8,7 @@ import axios from 'axios';
 import { parseFile } from 'music-metadata';
 import mime from 'mime-types';
 import {loading} from './loading.js';
+import { type } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,7 +70,8 @@ function initDB() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             path TEXT,
-            cover TEXT
+            cover TEXT,
+            type TEXT
         );
 
         CREATE TABLE music_series (
@@ -249,7 +251,7 @@ async function classifyMedia(db) {
             const albumFiles = await fs.readdir(albumPath);
             // console.log('Found album:', musicFile);
             const albumname = path.basename(albumPath);
-            db.prepare('INSERT INTO music (name, path) VALUES (@name,@path)').run({ name: albumname, path: albumPath });
+            db.prepare('INSERT INTO music (name, path, type) VALUES (@name,@path,@type)').run({ name: albumname, path: albumPath, type: 'series' });
 
             const album_ID = db.prepare('SELECT id FROM music WHERE name = ?').get(albumname).id;
             // 將專輯中的每首歌曲插入資料庫
@@ -279,7 +281,7 @@ async function classifyMedia(db) {
                 // console.log('Found music file:', musicFile);
                 //Find Cover
                 const cover_path = await findCoverofMusic(filePath);
-                alone_music_list.push({ path: filePath, name: musicname, cover: cover_path });
+                alone_music_list.push({ path: filePath, name: musicname, cover: cover_path, type: 'music' });
             }
         }
         finished_folder++;
@@ -288,7 +290,7 @@ async function classifyMedia(db) {
     process.stdout.write('\x1b[?25h');
 
     // 將單曲插入資料庫
-    const insert_music = db.prepare('INSERT INTO music (name, path, cover) VALUES (@name,@path,@cover)');
+    const insert_music = db.prepare('INSERT INTO music (name, path, cover, type) VALUES (@name,@path,@cover,@type)');
     const insert_alone_music = db.transaction((files) => {
         for (const file of files) { insert_music.run(file); }
     });

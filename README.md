@@ -66,6 +66,89 @@ http://localhost:3000
   ![key](md_img/tmdb_key.png) 
   
 > [!IMPORTANT]
-> 在<span style="background-color: rgba(237, 222, 11, 0.7);">**Server資料夾**</span>有```.env.example```，請在使用時把.example去除變成```.env```
+> 在**Server資料夾**有```.env.example```，請在使用時把`.example`去除變成```.env```
     
-  
+## API請求
+### ```/get_all```  
+獲取Database中所有資料，總共有4項 
+- `videos`
+  - id: 影片類別中的唯一ID
+  - name: 影片名稱，也就是影片資料夾名稱
+  - type: video或series，`video`代表資料夾只有單個影片、`series`代表是影集，有多影片
+  - total_episodes: 總共集數，如果是單影片```value = null```，影集```value = {"S1":20,"S2":25}```，如果是沒季數直接把集數放入```value = {"NONE":25}```
+  - poster: 影片海報，如果資料夾有poster圖檔會優先使用，沒有會根據有沒有**TMDB API KEY**來決定要不要線上獲取  
+  ***Example:***  
+  ```json
+  "videos": [
+        {
+            "id": 1,
+            "name": "Kimi wo Aishita Hitori no Boku e／Boku ga Aishita Subete no Kimi e",
+            "type": "series",
+            "total_episodes": "{\"NONE\":2}",
+            "poster": "/Kimi wo Aishita Hitori no Boku e／Boku ga Aishita Subete no Kimi e/poster.jpg"
+        },
+        {
+            "id": 2,
+            "name": "shelter",
+            "type": "video",
+            "total_episodes": null,
+            "poster": "/shelter/q6ldb9vaZdfEPAx0kWynv8ZGcb6.webp"
+        },
+        {
+            "id": 3,
+            "name": "Steins;Gate",
+            "type": "series",
+            "total_episodes": "{\"S2\":2,\"[Seed-Raws] Steins;Gate - BD-BOX (BD 1280x720 AVC AAC)\":27}",
+            "poster": "https://image.tmdb.org/t/p/original/5DZix6ggRiFEbsGqUeTAI1z2wtX.jpg"
+        },
+        {
+            "id": 4,
+            "name": "為美好的世界獻上祝福！紅傳說 ",
+            "type": "video",
+            "total_episodes": null,
+            "poster": "https://image.tmdb.org/t/p/original/dCPjrCFBPuKgWt78c9DfxXCS4zm.jpg"
+        }
+    ]
+    ```
+- `music`
+  - id: 音樂類別中的唯一ID
+  - name: 音樂名稱
+  - cover: 音樂封面
+  - type: 單曲: `value = music` 專輯(有資料夾): `value = series`  
+  ***Example:***  
+  ```json
+  "music": [
+        {
+            "id": 1,
+            "name": "ALBUM",
+            "cover": null,
+            "type": "series"
+        },
+        {
+            "id": 2,
+            "name": "001. 一番の宝物 ～Yui final ver.～",
+            "cover": "/001. 一番の宝物 ～Yui final ver.～.jpg",
+            "type": "music"
+        },
+        {
+            "id": 3,
+            "name": "002. late in autumn",
+            "cover": "/002. late in autumn.jpg",
+            "type": "music"
+        },
+        {
+            "id": 4,
+            "name": "003. 天使にふれたよ!",
+            "cover": "/003. 天使にふれたよ!.jpg",
+            "type": "music"
+        },
+        {
+            "id": 5,
+            "name": "搖曳露營 ED",
+            "cover": null,
+            "type": "music"
+        }
+    ]
+    ```
+- `video_series`
+- `music_series`
