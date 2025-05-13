@@ -7,6 +7,21 @@
     <title>Document</title>
 </head>
 <body>
-    <img src="Video/Kimi wo Aishita Hitori no Boku e／Boku ga Aishita Subete no Kimi e/poster.jpg" alt="">
+    <img src="/cover/016. 恋爱サーキュレーション.jpg" alt="">
+    <audio id="audioPlayer" src="Music/003. 天使にふれたよ!.m4a"></audio>
+    <button onclick="playAudio()">播放</button>
+    <button onclick="pauseAudio()">暫停</button>
+    
+    <script>
+        const audio = document.getElementById('audioPlayer');
+
+        function playAudio() {
+            audio.play();
+        }
+
+        function pauseAudio() {
+            audio.pause();
+        }
+    </script>
 </body>
 </html>

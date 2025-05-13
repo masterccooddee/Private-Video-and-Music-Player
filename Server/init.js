@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
+import { parseFile } from 'music-metadata';
+import mime from 'mime-types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,13 +29,14 @@ export async function init() {
 }
 
 function initDB() {
-    const db = new sqlite('media.db');
+    const db = new sqlite('media.db', { verbose: console.log });
 
     db.pragma('foreign_keys = ON');
     // 刪除舊的表（如果存在）
     db.exec(`
         DROP TABLE IF EXISTS video_series;
         DROP TABLE IF EXISTS videos;
+        DROP TABLE IF EXISTS music_series;
         DROP TABLE IF EXISTS music;
     `);
 
@@ -61,7 +64,16 @@ function initDB() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             path TEXT,
-            cover BLOB
+            cover TEXT
+        );
+
+        CREATE TABLE music_series (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            from_music_id INTEGER,
+            name TEXT,
+            path TEXT,
+            cover TEXT,
+            FOREIGN KEY (from_music_id) REFERENCES music(id) ON DELETE CASCADE
         );
     `);
 
@@ -200,13 +212,71 @@ async function classifyMedia(db) {
             classifyVideo(db, filePath, path.basename(folder, path.extname(folder)), false);
         }
     }
+    console.log('...........................................................');
 
+    try {
+        await fs.access('../public/music_cover')
+    }
+    catch {
+        await fs.mkdir('../public/music_cover', { recursive: true });
+    }
     //分類音樂
     const musicFiles = await fs.readdir(musicFolder);
     console.log('Total music files', musicFiles.length);
-    
+    let alone_music_list = [];
+    // 專輯或單曲
+    for (const musicFile of musicFiles) {
+        const stats = await fs.stat(path.join(musicFolder, musicFile));
+        // 專輯
+        if (stats.isDirectory()) {
+            const albumPath = path.join(musicFolder, musicFile);
+            const albumFiles = await fs.readdir(albumPath);
+            console.log('Found album:', musicFile);
+            const albumname = path.basename(albumPath);
+            db.prepare('INSERT INTO music (name, path) VALUES (@name,@path)').run({ name: albumname, path: albumPath });
 
+            const album_ID = db.prepare('SELECT id FROM music WHERE name = ?').get(albumname).id;
+            // 將專輯中的每首歌曲插入資料庫
+            const insert_music = db.prepare('INSERT INTO music_series (from_music_id,name, path,cover) VALUES (@id,@name,@path,@cover)');
+            const musiclist = [];
+            for (const file of albumFiles) {
+                const musicname = path.basename(file, path.extname(file));
+                const fileExt = path.extname(file).toLowerCase();
+                if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
+                    const filePath = path.join(albumPath, file);
+                    const cover_path = await findCoverofMusic(filePath);
+                    musiclist.push({ path: filePath, name: musicname, cover: cover_path, id: album_ID });
+                }
+            }
+            const insert_album = db.transaction((files) => {
+                for (const file of files) { insert_music.run(file); }
+            });
+            insert_album(musiclist);
+        }
 
+        // 單曲
+        else {
+            const musicname = path.basename(musicFile, path.extname(musicFile));
+            const filePath = path.join(musicFolder, musicFile);
+            const fileExt = path.extname(filePath).toLowerCase();
+            if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
+                console.log('Found music file:', musicFile);
+                //Find Cover
+                const cover_path = await findCoverofMusic(filePath);
+                alone_music_list.push({ path: filePath, name: musicname, cover: cover_path });
+            }
+        }
+    }
+
+    // 將單曲插入資料庫
+    const insert_music = db.prepare('INSERT INTO music (name, path, cover) VALUES (@name,@path,@cover)');
+    const insert_alone_music = db.transaction((files) => {
+        for (const file of files) { insert_music.run(file); }
+    });
+    insert_alone_music(alone_music_list);
+    console.log('Inserted music into database:', alone_music_list.length);
+
+    console.log('...........................................................');
 
 }
 
@@ -366,6 +436,30 @@ async function getPosterFromTMDB(videoname, tmdb_key) {
     }
     catch (error) {
         console.error('Error fetching data from TMDB:', error);
+        return null;
+    }
+}
+
+// findCoverofMusic
+async function findCoverofMusic(musicpath) {
+    try {
+        const metadata = await parseFile(musicpath);
+
+        // 檢查是否有封面
+        if (metadata.common.picture && metadata.common.picture.length > 0) {
+            const cover = metadata.common.picture[0]; // 取得第一個封面
+            const ext = mime.extension(cover.format);
+            const coverPath = '../public/music_cover/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
+            await fs.writeFile(coverPath, cover.data); // 將封面儲存為檔案
+            console.log(cover.format);
+            const outputPath = '/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
+            return outputPath; // 將封面儲存為檔案
+        } else {
+            console.log('No cover found in:', musicpath);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error extracting cover from music file:', error);
         return null;
     }
 }

@@ -50,5 +50,5 @@ http://localhost:3000
  │   │   └── 歌曲名稱2.mp3  
  │   ├── music1.mp3  
  │   └── music2.mp3  
- └── 📂MultiMediaPlayer  
+ └── 📂MultiMediaPlayer  (This Project)
  ```

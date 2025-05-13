@@ -12,6 +12,8 @@ await init()
 
 const app = express();
 app.use('/',express.static('../public'));
+app.use('/cover',express.static('../public/music_cover'));
+app.use('/Music',express.static('../../Music'));
 app.use('/Video',express.static('../../Video'));
 // app.use(express.static('dist'))
 
