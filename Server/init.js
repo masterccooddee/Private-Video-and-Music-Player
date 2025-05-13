@@ -15,7 +15,7 @@ export async function init() {
     await classifyMedia(db);
     // 如果影片資料庫沒poster，有TMDB API KEY，則下載海報
     const tmdb_key = process.env.TMDB_KEY;
-    if (tmdb_key !== undefined) {
+    if (tmdb_key !== undefined && tmdb_key !== 'YOUR_TMDB_API_KEY') {
         console.log('TMDB_KEY is defined, starting poster finding.');
         await findPosterFromTMDB(db, tmdb_key);
     }
@@ -200,6 +200,14 @@ async function classifyMedia(db) {
             classifyVideo(db, filePath, path.basename(folder, path.extname(folder)), false);
         }
     }
+
+    //分類音樂
+    const musicFiles = await fs.readdir(musicFolder);
+    console.log('Total music files', musicFiles.length);
+    
+
+
+
 }
 
 
