@@ -7,6 +7,7 @@ dotenv.config();
 import axios from 'axios';
 import { parseFile } from 'music-metadata';
 import mime from 'mime-types';
+import {loading} from './loading.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,7 +30,7 @@ export async function init() {
 }
 
 function initDB() {
-    const db = new sqlite('media.db', { verbose: console.log });
+    const db = new sqlite('media.db');
 
     db.pragma('foreign_keys = ON');
     // 刪除舊的表（如果存在）
@@ -130,7 +131,11 @@ async function classifyMedia(db) {
 
     //分類影片
     const folders = await fs.readdir(videoFolder);
-    console.log('Total folders', folders.length);
+    console.log('Total video folders', folders.length);
+    let finished_folder = 0;
+    let starttime = Date.now();
+    process.stdout.write('\x1b[?25l');
+    loading(finished_folder, folders.length, starttime);
     for (const folder of folders) {
         const folderpath = path.join(videoFolder, folder);
         const stats = await fs.stat(folderpath);
@@ -145,10 +150,10 @@ async function classifyMedia(db) {
                     let video = db.prepare('SELECT name FROM videos WHERE name = ?').get(folder);
 
                     if (video !== undefined) {
-                        console.log('Video already exists in database:', video.name);
+                        // console.log('Video already exists in database:', video.name);
                         db.prepare('UPDATE videos SET path = @path WHERE name = @name').run({ name: folder, path: seriesPath });
                     } else {
-                        console.log('Inserting video into database:', folder);
+                        // console.log('Inserting video into database:', folder);
                         db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
                     }
                     let season = subfolder;
@@ -190,7 +195,7 @@ async function classifyMedia(db) {
 
                         if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
                             PutInSeriesPoster(db, filePath, folder);
-                            console.log('Found poster file:', folder);
+                            // console.log('Found poster file:', folder);
                         }
                     }
                     // 如果沒有影片檔案，則是系列影片的海報
@@ -211,8 +216,12 @@ async function classifyMedia(db) {
             const filePath = path.join(videoFolder, folder);
             classifyVideo(db, filePath, path.basename(folder, path.extname(folder)), false);
         }
+        finished_folder++;
+        loading(finished_folder, folders.length, starttime);
     }
-    console.log('...........................................................');
+    process.stdout.write('\x1b[?25h');
+    // console.log('...........................................................');
+    finished_folder = 0;
 
     try {
         await fs.access('../public/music_cover')
@@ -222,8 +231,11 @@ async function classifyMedia(db) {
     }
     //分類音樂
     const musicFiles = await fs.readdir(musicFolder);
-    console.log('Total music files', musicFiles.length);
+    console.log('\nTotal music files', musicFiles.length);
     let alone_music_list = [];
+    starttime = Date.now();
+    process.stdout.write('\x1b[?25l');
+    loading(finished_folder, musicFiles.length, starttime);
     // 專輯或單曲
     for (const musicFile of musicFiles) {
         const stats = await fs.stat(path.join(musicFolder, musicFile));
@@ -231,7 +243,7 @@ async function classifyMedia(db) {
         if (stats.isDirectory()) {
             const albumPath = path.join(musicFolder, musicFile);
             const albumFiles = await fs.readdir(albumPath);
-            console.log('Found album:', musicFile);
+            // console.log('Found album:', musicFile);
             const albumname = path.basename(albumPath);
             db.prepare('INSERT INTO music (name, path) VALUES (@name,@path)').run({ name: albumname, path: albumPath });
 
@@ -260,13 +272,16 @@ async function classifyMedia(db) {
             const filePath = path.join(musicFolder, musicFile);
             const fileExt = path.extname(filePath).toLowerCase();
             if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
-                console.log('Found music file:', musicFile);
+                // console.log('Found music file:', musicFile);
                 //Find Cover
                 const cover_path = await findCoverofMusic(filePath);
                 alone_music_list.push({ path: filePath, name: musicname, cover: cover_path });
             }
         }
+        finished_folder++;
+        loading(finished_folder, musicFiles.length, starttime);
     }
+    process.stdout.write('\x1b[?25h');
 
     // 將單曲插入資料庫
     const insert_music = db.prepare('INSERT INTO music (name, path, cover) VALUES (@name,@path,@cover)');
@@ -274,9 +289,9 @@ async function classifyMedia(db) {
         for (const file of files) { insert_music.run(file); }
     });
     insert_alone_music(alone_music_list);
-    console.log('Inserted music into database:', alone_music_list.length);
+    // console.log('Inserted music into database:', alone_music_list.length);
 
-    console.log('...........................................................');
+    console.log('\n....................................................................................................');
 
 }
 
@@ -292,31 +307,31 @@ async function classifyVideo(db, filePath, folder, have_Folder = false) {
     const update_video = db.prepare('UPDATE videos SET path = @path WHERE name = @name');
 
     if (fileExt === '.mp4' || fileExt === '.mkv' || fileExt === '.avi') {
-        console.log('Found video file:', fileName);
+        // console.log('Found video file:', fileName);
 
         // 使用檔案路徑作為唯一標識
 
         const video = search_name.get(folder);
         if (video !== undefined) {
-            console.log('Video already exists in database:', video.name);
+            // console.log('Video already exists in database:', video.name);
             update_video.run({ name: folder, path: filePath });
         } else {
-            console.log('Inserting video into database:', fileName);
+            // console.log('Inserting video into database:', fileName);
             insert_video.run({ name: folder, path: filePath, type: 'video', poster: '-1' });
         }
     }
 
     if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
-        console.log('Found poster file:', fileName);
+        // console.log('Found poster file:', fileName);
 
         // 使用檔案路徑作為唯一標識
         const video = search_name.get(folder);
         const posterpath = '/' + folder + '/' + path.basename(filePath);
         if (video !== undefined) {
-            console.log('Poster already exists in database:', video.name);
+            // console.log('Poster already exists in database:', video.name);
             update_poster.run({ name: folder, poster: posterpath });
         } else {
-            console.log('Inserting poster into database:', fileName);
+            // console.log('Inserting poster into database:', fileName);
             insert_video.run({ name: folder, path: '-1', type: 'video', poster: posterpath });
         }
     }
@@ -331,10 +346,10 @@ function PutInSeriesPoster(db, filePath, folder) {
     const video = search_name.get(folder);
     const posterpath = '/' + folder + '/' + path.basename(filePath);
     if (video !== undefined) {
-        console.log('From putinposter Video already exists in database:', video.name);
+        // console.log('From putinposter Video already exists in database:', video.name);
         update_poster.run({ name: folder, poster: posterpath });
     } else {
-        console.log('Inserting poster into database:', folder);
+        // console.log('Inserting poster into database:', folder);
         insert_poster.run({ name: folder, path: '-1', type: 'series', poster: posterpath });
     }
 }
@@ -360,7 +375,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
         .sort((a, b) => a.localeCompare(b)); // 按字典順序排序
 
     let total_episodes = db.prepare('SELECT total_episodes FROM videos WHERE name = ?').get(seriesname);
-    console.log('total_episodes:', total_episodes);
+    // console.log('total_episodes:', total_episodes);
     let episodes = {};
     if (total_episodes.total_episodes === null) {
         episodes[`${season}`] = sortedFiles.length;
@@ -391,7 +406,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
     });
 
     insert_series(sortedFiles);
-    console.log('Inserted series videos into database:', seriesname, season);
+    // console.log('Inserted series videos into database:', seriesname, season);
 
 
 }
@@ -451,15 +466,15 @@ async function findCoverofMusic(musicpath) {
             const ext = mime.extension(cover.format);
             const coverPath = '../public/music_cover/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
             await fs.writeFile(coverPath, cover.data); // 將封面儲存為檔案
-            console.log(cover.format);
+            // console.log(cover.format);
             const outputPath = '/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
             return outputPath; // 將封面儲存為檔案
         } else {
-            console.log('No cover found in:', musicpath);
+            // console.log('No cover found in:', musicpath);
             return null;
         }
     } catch (error) {
-        console.error('Error extracting cover from music file:', error);
+        // console.error('Error extracting cover from music file:', error);
         return null;
     }
 }
