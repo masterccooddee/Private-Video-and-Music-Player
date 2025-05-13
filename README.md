@@ -52,3 +52,20 @@ http://localhost:3000
  │   └── music2.mp3  
  └── 📂MultiMediaPlayer  (This Project)
  ```
+
+ # Server
+ ## 設定
+- **```.env```**  
+  內容如下  
+  ```
+  TMDB_KEY = "YOUR_TMDB_API_KEY"
+
+  ```
+  *```TMDB_KEY```*  
+  如果想使用自動抓取電影、影集的海報，請填入你的**TMDB API KEY**，如果沒有填寫就不會自動抓取，[TMDB官網](https://www.themoviedb.org/)申請API KEY，在[TMDB API網站](https://developer.themoviedb.org/reference/intro/authentication)能查到自己的API KEY  
+  ![key](md_img/tmdb_key.png) 
+  
+> [!IMPORTANT]
+> 在<span style="background-color: rgba(237, 222, 11, 0.7);">**Server資料夾**</span>有```.env.example```，請在使用時把.example去除變成```.env```
+    
+  
