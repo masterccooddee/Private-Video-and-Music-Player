@@ -14,16 +14,20 @@ const __dirname = path.dirname(__filename);
 
 export async function init() {
     const db = initDB();
-    // 初始化影片資料庫
-    await classifyMedia(db);
-    // 如果影片資料庫沒poster，有TMDB API KEY，則下載海報
-    const tmdb_key = process.env.TMDB_KEY;
-    if (tmdb_key !== undefined && tmdb_key !== 'YOUR_TMDB_API_KEY') {
-        console.log('TMDB_KEY is defined, starting poster finding.');
-        await findPosterFromTMDB(db, tmdb_key);
-    }
-    else {
-        console.log('TMDB_KEY is undefined, skipping poster finding.');
+    try {
+        // 初始化影片資料庫
+        await classifyMedia(db);
+
+        // 如果影片資料庫沒 poster，有 TMDB API KEY，則下載海報
+        const tmdb_key = process.env.TMDB_KEY;
+        if (tmdb_key !== undefined && tmdb_key !== 'YOUR_TMDB_API_KEY') {
+            console.log('\nTMDB_KEY is defined, starting poster finding.');
+            await findPosterFromTMDB(db, tmdb_key);
+        } else {
+            console.log('\nTMDB_KEY is undefined, skipping poster finding.');
+        }
+    } finally {
+        db.close(); // 確保連線被正確關閉
     }
 
 
@@ -291,7 +295,7 @@ async function classifyMedia(db) {
     insert_alone_music(alone_music_list);
     // console.log('Inserted music into database:', alone_music_list.length);
 
-    console.log('\n....................................................................................................');
+    // console.log('\n...............................................................................');
 
 }
 
@@ -417,14 +421,20 @@ async function findPosterFromTMDB(db, tmdb_key) {
     const allSeries = allVideos.filter(video => video.poster === '-1');
     const videoname = allSeries.map(video => video.name);
 
+    let start_time = Date.now();
+    let finished = 0;
+    process.stdout.write('\x1b[?25l');
+    loading(finished, videoname.length, start_time);
     for (const name of videoname) {
         const poster_url = await getPosterFromTMDB(name, tmdb_key);
         if (poster_url !== null) {
             db.prepare('UPDATE videos SET poster = @poster WHERE name = @name').run({ name: name, poster: poster_url });
-            console.log('Updated poster URL for video:', name);
+            // console.log('Updated poster URL for video:', name);
         } else {
-            console.log('Poster URL is null for video:', name);
+            // console.log('Poster URL is null for video:', name);
         }
+        finished++;
+        loading(finished, videoname.length, start_time);
     }
 
 
@@ -446,7 +456,7 @@ async function getPosterFromTMDB(videoname, tmdb_key) {
 
         });
         let poster_url = 'https://image.tmdb.org/t/p/original' + response.data.results[0].poster_path;
-        console.log('Poster URL:', poster_url);
+        // console.log('Poster URL:', poster_url);
         return poster_url;
     }
     catch (error) {
