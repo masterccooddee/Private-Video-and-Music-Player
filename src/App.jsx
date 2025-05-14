@@ -1,4 +1,3 @@
-// App.jsx
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar/Sidebar'
 import Topbar from './components/Topbar/Topbar'
@@ -16,8 +15,8 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   useEffect(() => {
-    document.body.classList.remove('dark-mode', 'light-mode')
-    document.body.classList.add(isDarkMode ? 'dark-mode' : 'light-mode')
+    document.body.classList.toggle('dark-mode', isDarkMode)
+    document.body.classList.toggle('light-mode', !isDarkMode)
   }, [isDarkMode])
 
   return (
@@ -25,8 +24,8 @@ export default function App() {
       <Sidebar
         isDarkMode={isDarkMode}
         isCollapsed={isSidebarCollapsed}
-        onToggleSidebar={() => setIsSidebarCollapsed(prev => !prev)}
-        onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+        onToggleSidebar={() => setIsSidebarCollapsed(p => !p)}
+        onToggleDarkMode={() => setIsDarkMode(p => !p)}
       />
       <main className="main-content">
         <Topbar isDarkMode={isDarkMode} />

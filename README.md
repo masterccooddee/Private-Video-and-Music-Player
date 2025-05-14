@@ -22,7 +22,7 @@ npm run dev
 ### 3️⃣ 打開瀏覽器
 開啟瀏覽器並前往：
 ```
-http://localhost:3000
+http://localhost:5173
 ```
 
 ## 路徑結構
