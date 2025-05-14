@@ -1,10 +1,6 @@
-import ffmpeg from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import path from 'path';
-import { open } from 'sqlite';
-import sqlite3 from 'sqlite3';
-import dotenv from 'dotenv';
-dotenv.config();
+import { convertAudio } from './audio_converter.js';
 
 
 export async function serve_music(id, db, redis) {
@@ -25,21 +21,38 @@ export async function serve_music(id, db, redis) {
         if (id.includes('-')) {
             music_id = id.split(':')[1].split('-')[0];
             music_series_id = id.split(':')[1].split('-')[1];
-            const music_series = await db.get('SELECT path FROM music_series WHERE id = ?', [music_series_id]);
+            const music_series = await db.get('SELECT path, cover FROM music_series WHERE id = ?', [music_series_id]);
             const music_path = path.parse(music_series.path);
             // console.log(music_path);
+            // console.log(music_path);
+            const music_name = music_path.name;
             const output = '/Music' + '/' + path.basename(music_path.dir) + '/' + music_path.base;
+            const out = await checkAudioSupport(music_series.path, music_name, output);
+            let audio_info = {
+                music_url: out,
+                cover_url: music_series.cover,
+            };
+            audio_info = JSON.stringify(audio_info);
             // console.log('output:', output);
-            redis.set(key, output, 'EX', 60); // Cache for 24 hours
-            return output;
+            redis.set(key, audio_info, 'EX', 180); // Cache for 24 hours
+            return audio_info;
         }
         else {
             music_id = id.split(':')[1];
-            const music = await db.get('SELECT path FROM music WHERE id = ?', [music_id]);
+            const music = await db.get('SELECT path, cover FROM music WHERE id = ?', [music_id]);
             const music_path = path.parse(music.path);
+            // console.log(music_path);
+            const music_name = music_path.name;
             const output = '/' + path.basename(music_path.dir) + '/' + music_path.base;
-            redis.set(key, output, 'EX', 60); // Cache for 24 hours
-            return output;
+            // console.log(music_name);
+            let out = await checkAudioSupport(music.path, music_name, output);
+            let audio_info = {
+                music_url: out,
+                cover_url: music.cover,
+            };
+            audio_info = JSON.stringify(audio_info);
+            redis.set(key, audio_info, 'EX', 180); // Cache for 24 hours
+            return audio_info;
         }
 
     }
@@ -47,11 +60,25 @@ export async function serve_music(id, db, redis) {
 
 
 }
-// const db = await open({
-//     filename: 'media.db',
-//     driver: sqlite3.Database
-// });
-// const music_series = await db.get('SELECT path FROM music_series WHERE id = ?', [1]);
-// console.log(music_series);
-// const music_path = path.parse(music_series.path);
-// console.log(music_path);
+
+async function checkAudioSupport(music_path, name, output) {
+
+    const acceptedAudioTypes = ['.mp3', '.wav', '.flac', '.aac', '.ogg'];
+    const extname = path.extname(music_path);
+    if (acceptedAudioTypes.includes(extname)) {
+        return output;
+    }
+    else {
+        try{
+            await fs.access(path.join('..', 'public', 'tmp'));
+        }
+        catch{
+            await fs.mkdir(path.join('..', 'public', 'tmp'), { recursive: true });
+        }
+        const converted_path = await convertAudio(music_path, name);
+        return converted_path;
+    }
+}
+
+// let out = await checkAudioSupport('D:\\School\\3\\JS\\Project_MultiMediaPlayer\\Music\\搖曳露營 ED.mp3', '003. 天使にふれたよ!', 'output');
+// console.log(out);

@@ -22,13 +22,20 @@ await init()
         console.error('\n\nError initializing: ' + err);
     });
 
+// 與SQLite資料庫建立連線
 const db = await open({
     filename: 'media.db',
     driver: sqlite3.Database
 });
 
+// 與Redis建立連線
+if (process.env.REDIS_HOST === undefined || process.env.REDIS_PORT === undefined) {
+    console.error('Redis host or port not set in environment variables');
+    process.exit(1);
+}
 const redis = new Redis(parseInt(process.env.REDIS_PORT), process.env.REDIS_HOST);
 
+// Redis監聽事件
 redis.on('error', (err) => {
     console.error('Redis error: ', err);
 });
@@ -41,17 +48,40 @@ redis.on('end', () => {
     console.log('Redis disconnected');
 });
 
-process.on('exit', async () => {
+// 創建一個新的 Redis 客戶端來監聽事件
+const subscriber = new Redis(parseInt(process.env.REDIS_PORT), process.env.REDIS_HOST);
+
+// 訂閱過期事件
+subscriber.psubscribe('__keyevent@0__:expired', (err, count) => {
+    if (err) {
+        console.error('訂閱過期事件失敗:', err);
+    } else {
+        console.log(`成功訂閱 ${count} 個頻道的過期事件`);
+    }
+});
+
+// 處理過期事件
+subscriber.on('pmessage', (pattern, channel, message) => {
+    console.log(`鍵過期: ${message}`);
+    // 你可以在這裡執行其他操作，例如清理資源或觸發其他邏輯
+});
+
+
+// 監聽關閉事件
+process.on('SIGINT', async () => {
+    console.log('Received SIGINT. Closing database and Redis connections...');
     await db.close();
     await redis.quit();
+    process.exit(0);
 });
+
 
 const app = express();
 app.use(morgan('dev'));
 
 app.use('/', express.static('../public'));
 app.use('/cover', express.static('../public/music_cover'));
-// app.use('/Music', express.static('../../Music'));
+app.use('/Music', express.static('../../Music'));
 app.use('/Video', express.static('../../Video'));
 
 app.get('/get_all', async (req, res) => {
@@ -73,6 +103,7 @@ app.get('/get_all', async (req, res) => {
 app.get('/music/:id', async (req, res) => {
     const id = req.params.id;
     const output = await serve_music(id, db, redis);
+    res.setHeader('Content-Type', 'application/json');
     res.send(output);
 });
 
