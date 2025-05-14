@@ -60,4 +60,4 @@ export function get_from_type(db_path, type = '') {
 
 // let output = get_all_file('media.db');
 // fs.writeFileSync('output.json', output);
-console.log(get_from_type('media.db', 'music,music_series'));
+// console.log(get_from_type('media.db', 'music,music_series'));
