@@ -1,11 +1,8 @@
 import sqlite3 from 'sqlite3';
-import {open} from 'sqlite';
+import { open } from 'sqlite';
 
-export default async function get_all_file(db_path) {
-    const db = await open({
-        filename: db_path,
-        driver: sqlite3.Database
-    });
+export default async function get_all_file(db) {
+
     let output = {};
     const videos = await db.all('SELECT id, name, type, total_episodes, poster FROM videos');
     const music = await db.all('SELECT id, name, cover,type FROM music');
@@ -21,7 +18,7 @@ export default async function get_all_file(db_path) {
     return outputJSON;
 }
 
-export async function get_from_type(db_path, type = '') {
+export async function get_from_type(db, type = '') {
     let type_list = [];
     if (type === '') return null;
     type.trim();
@@ -30,12 +27,8 @@ export async function get_from_type(db_path, type = '') {
     type_list = type_list.filter((item) => { return (item !== '' && (item === 'videos' || item === 'music' || item === 'video_series' || item === 'music_series')) });
     if (type_list.length === 0) return null;
     const type_set = new Set(type_list);
-    const db = await open({
-        filename: db_path,
-        driver: sqlite3.Database
-    });
     let output = {};
-    for(const item of type_set) {
+    for (const item of type_set) {
 
         switch (item) {
 

@@ -14,6 +14,7 @@ dist-ssr
 media.db
 *.local
 .env
+dev/*
 
 # Editor directories and files
 .vscode/*
