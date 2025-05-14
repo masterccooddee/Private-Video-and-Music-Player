@@ -1,7 +1,10 @@
 import express from 'express';
 import morgan from 'morgan';
-import {init} from './init.js';
+import { init } from './init.js';
 import get_all from './get_all_file.js';
+import { get_from_type } from './get_all_file.js';
+
+const PORT = 3000;
 
 console.log('Starting server...');
 await init()
@@ -15,20 +18,28 @@ await init()
 const app = express();
 app.use(morgan('dev'));
 
-app.use('/',express.static('../public'));
-app.use('/cover',express.static('../public/music_cover'));
-app.use('/Music',express.static('../../Music'));
-app.use('/Video',express.static('../../Video'));
+app.use('/', express.static('../public'));
+app.use('/cover', express.static('../public/music_cover'));
+app.use('/Music', express.static('../../Music'));
+app.use('/Video', express.static('../../Video'));
 
 app.get('/get_all', (req, res) => {
-    
+
     const db_path = 'media.db';
-    const output = get_all(db_path);
+
+    const type = req.query.type;
+    let output;
+    if (type === undefined) {
+        output = get_all(db_path);
+    }
+    else {
+        output = get_from_type(db_path, type);
+    }
+
     res.setHeader('Content-Type', 'application/json');
     res.send(output);
 });
 
-
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
-    });
+});
