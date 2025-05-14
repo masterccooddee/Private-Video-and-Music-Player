@@ -7,7 +7,7 @@ dotenv.config();
 import axios from 'axios';
 import { parseFile } from 'music-metadata';
 import mime from 'mime-types';
-import {loading} from './loading.js';
+import { loading } from './loading.js';
 import { type } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -457,6 +457,9 @@ async function getPosterFromTMDB(videoname, tmdb_key) {
             }
 
         });
+        if (response.data.results[0] === undefined) {
+            return null;
+        }
         let poster_url = 'https://image.tmdb.org/t/p/original' + response.data.results[0].poster_path;
         // console.log('Poster URL:', poster_url);
         return poster_url;

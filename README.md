@@ -51,7 +51,9 @@ http://localhost:3000
  │   ├── music1.mp3  
  │   └── music2.mp3  
  └── 📂MultiMediaPlayer  (This Project)
- ```
+ ```  
+ >[!NOTE]
+ >幫影片資料夾(結構中的`video1`, `video2`, `video3`)取名請用作品完整名稱，例如你的名稱可能是`[AQUAWS][ARIA_The_CREPUSCOLO][1080p]`要把名稱改成`ARIA The CREPUSCOLO`才能在TMDB搜尋的到，最好名稱連接都用空白不要用符號(例如:`YOUR.VIDEO -> YOUR VIDEO`)
 
  # Server
  ## 設定
@@ -112,7 +114,7 @@ http://localhost:3000
     ```
 - `music`
   - id: 音樂類別中的唯一ID
-  - name: 音樂名稱
+  - name: 音樂或專輯名稱
   - cover: 音樂封面
   - type: 單曲: `value = music` 專輯(有資料夾): `value = series`  
   ***Example:***  
@@ -151,4 +153,53 @@ http://localhost:3000
     ]
     ```
 - `video_series`
+  - id: video series中的唯一ID
+  - from_video_id: 來源video ID(存放資料夾ID)
+  - season: 季
+  - episode: 第幾集  
+  ***Example:***
+  ```json
+    "video_series": [
+            {
+                "id": 1,
+                "from_video_id": 2,
+                "season": "NONE",
+                "episode": 1
+            },
+            {
+                "id": 2,
+                "from_video_id": 2,
+                "season": "NONE",
+                "episode": 2
+            },
+            {
+                "id": 3,
+                "from_video_id": 2,
+                "season": "NONE",
+                "episode": 3
+            }
+            ]
+  ```
+  
 - `music_series`
+  - id: music series中的唯一ID
+  - from_music_id: 來源music ID(存放資料夾ID)
+  - name: 音樂檔案名字
+  - cover: 音樂封面  
+  ***Example:***  
+  ```json
+  "music_series": [
+        {
+            "id": 1,
+            "from_music_id": 1,
+            "name": "music1",
+            "cover": null
+        },
+        {
+            "id": 2,
+            "from_music_id": 1,
+            "name": "music2",
+            "cover": null
+        }
+    ]
+    ```  
