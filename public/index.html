@@ -7,13 +7,32 @@
     <title>Document</title>
 </head>
 <body>
-    <img src="/cover/016. 恋爱サーキュレーション.jpg" alt="">
-    <audio id="audioPlayer" src="Music/003. 天使にふれたよ!.m4a"></audio>
+    <p class ="name"></p>
+    <img class="img" alt="loading">
+    <audio id="audioPlayer"></audio>
     <button onclick="playAudio()">播放</button>
     <button onclick="pauseAudio()">暫停</button>
     
     <script>
+
+        let img = document.querySelector('.img');
+
+        let audioUrl = '';
         const audio = document.getElementById('audioPlayer');
+        fetch('/music/music:3')
+        .then((res) => 
+        {
+            return res.json();
+
+        })
+        .then((data) => {
+            console.log(data);
+            audio.src = data.music_url;
+            img.src = data.cover_url;
+        })
+        .catch(err => console.error('Error fetching audio URL:', err));
+
+        
 
         function playAudio() {
             audio.play();

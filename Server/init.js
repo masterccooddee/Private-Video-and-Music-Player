@@ -8,7 +8,6 @@ import axios from 'axios';
 import { parseFile } from 'music-metadata';
 import mime from 'mime-types';
 import { loading } from './loading.js';
-import { type } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -482,7 +481,7 @@ async function findCoverofMusic(musicpath) {
             const coverPath = '../public/music_cover/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
             await fs.writeFile(coverPath, cover.data); // 將封面儲存為檔案
             // console.log(cover.format);
-            const outputPath = '/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
+            const outputPath = '/cover' + '/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
             return outputPath; // 將封面儲存為檔案
         } else {
             // console.log('No cover found in:', musicpath);

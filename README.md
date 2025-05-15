@@ -24,7 +24,9 @@ npm run dev
 ```
 http://localhost:5173
 ```
-
+## Requirement
+- Redis
+- FFmpeg   [安裝方法](https://vocus.cc/article/64701a2cfd897800014daed0)
 ## 路徑結構
 ```
 📂Upper folder   
@@ -61,11 +63,20 @@ http://localhost:5173
   內容如下  
   ```
   TMDB_KEY = "YOUR_TMDB_API_KEY"
-
+  REDIS_HOST = "localhost"
+  REDIS_PORT = 6379
   ```
   *```TMDB_KEY```*  
   如果想使用自動抓取電影、影集的海報，請填入你的**TMDB API KEY**，如果沒有填寫就不會自動抓取，[TMDB官網](https://www.themoviedb.org/)申請API KEY，在[TMDB API網站](https://developer.themoviedb.org/reference/intro/authentication)能查到自己的API KEY  
   ![key](md_img/tmdb_key.png) 
+     
+  **`REDIS_HOST`**、**`REDIS_PORT`**  
+  伺服器會用***Redis***做為緩衝，請先安裝，如果作業系統是windows可以到[這裡](https://github.com/redis-windows/redis-windows/releases)下載  
+  ![download](md_img/redis_download.png)  
+  解壓縮後即可使用，到redis資料夾使用終端輸入 **`.\start.bat`** (PowerShell) Redis伺服器就會啟動，請記得到`redis.conf` 將 `notify-keyspace-events ""` 改為 `notify-keyspace-events Ex` 這樣才能在資訊過期時把過期資料刪除  
+    
+> [!NOTE]
+> 如果Redis有設定別的IP位置或port請到 `.env` 更改
   
 > [!IMPORTANT]
 > 在**Server資料夾**有```.env.example```，請在使用時把`.example`去除變成```.env```
@@ -203,3 +214,9 @@ http://localhost:5173
         }
     ]
     ```  
+> [!TIP]
+> 如果只想獲取某部分資料，可以設定key，如下 **`http://localhost:3000/get_all?type={資料種類}`**  
+> *Examples:*  
+> 想要videos -> `http://localhost:3000/get_all?type=videos`  
+> 想要music、video_series -> `http://localhost:3000/get_all?type=music,video_series`  
+> 👉 **種類用 **`,`** 隔開**
