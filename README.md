@@ -214,8 +214,8 @@ http://localhost:5173
     ]
     ```  
 > [!TIP]
-> 如果只想獲取某部分資料，可以設定key，如下 **`http://localhost/get_all?type={資料種類}`**  
+> 如果只想獲取某部分資料，可以設定key，如下 **`http://localhost:3000/get_all?type={資料種類}`**  
 > *Examples:*  
-> 想要videos -> `http://localhost/get_all?type=videos`  
-> 想要music、video_series -> `http://localhost/get_all?type=music,video_series`  
+> 想要videos -> `http://localhost:3000/get_all?type=videos`  
+> 想要music、video_series -> `http://localhost:3000/get_all?type=music,video_series`  
 > 👉 **種類用 **`,`** 隔開**
