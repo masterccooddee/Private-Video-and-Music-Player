@@ -38,6 +38,7 @@ const redis = new Redis(parseInt(process.env.REDIS_PORT), process.env.REDIS_HOST
 // Redis監聽事件
 redis.on('error', (err) => {
     console.error('Redis error: ', err);
+    
 });
 
 redis.on('connect', () => {

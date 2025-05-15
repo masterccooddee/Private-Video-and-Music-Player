@@ -8,7 +8,6 @@ import axios from 'axios';
 import { parseFile } from 'music-metadata';
 import mime from 'mime-types';
 import { loading } from './loading.js';
-import { type } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
