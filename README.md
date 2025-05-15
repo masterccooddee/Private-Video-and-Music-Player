@@ -70,7 +70,9 @@ http://localhost:5173
   ![key](md_img/tmdb_key.png) 
      
   **`REDIS_HOST`**、**`REDIS_PORT`**  
-  伺服器會用***Redis***做為緩衝，請先安裝，如果作業系統是windows可以到[這裡](https://github.com/redis-windows/redis-windows/releases)下載，解壓縮後即可使用，到redis資料夾使用終端輸入 **`./start.bat`** Redis伺服器就會啟動，請記得到`redis.conf` 將 `notify-keyspace-events ""` 改為 `notify-keyspace-events Ex` 這樣才能在資訊過期時把過期資料刪除  
+  伺服器會用***Redis***做為緩衝，請先安裝，如果作業系統是windows可以到[這裡](https://github.com/redis-windows/redis-windows/releases)下載  
+  ![download](md_img/redis_download.png)  
+  解壓縮後即可使用，到redis資料夾使用終端輸入 **`./start.bat`** Redis伺服器就會啟動，請記得到`redis.conf` 將 `notify-keyspace-events ""` 改為 `notify-keyspace-events Ex` 這樣才能在資訊過期時把過期資料刪除  
     
 > [!NOTE]
 > 如果Redis有設定別的IP位置或port請到 `.env` 更改
