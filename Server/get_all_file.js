@@ -1,5 +1,3 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 
 export default async function get_all_file(db) {
 
@@ -14,7 +12,6 @@ export default async function get_all_file(db) {
     output['music_series'] = music_series;
     let outputJSON = JSON.stringify(output);
 
-    await db.close();
     return outputJSON;
 }
 
@@ -52,7 +49,6 @@ export async function get_from_type(db, type = '') {
     }
 
     let outputJSON = JSON.stringify(output);
-    await db.close();
     return outputJSON;
 
 }
