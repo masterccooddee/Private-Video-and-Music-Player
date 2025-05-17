@@ -331,7 +331,7 @@ async function classifyVideo(db, filePath, folder, have_Folder = false) {
 
         // 使用檔案路徑作為唯一標識
         const video = search_name.get(folder);
-        const posterpath = '/' + folder + '/' + path.basename(filePath);
+        const posterpath = '/Video/' + folder + '/' + path.basename(filePath);
         if (video !== undefined) {
             // console.log('Poster already exists in database:', video.name);
             update_poster.run({ name: folder, poster: posterpath });
@@ -349,7 +349,7 @@ function PutInSeriesPoster(db, filePath, folder) {
     const insert_poster = db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)');
 
     const video = search_name.get(folder);
-    const posterpath = '/' + folder + '/' + path.basename(filePath);
+    const posterpath = '/Video/' + folder + '/' + path.basename(filePath);
     if (video !== undefined) {
         // console.log('From putinposter Video already exists in database:', video.name);
         update_poster.run({ name: folder, poster: posterpath });

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p class ="name"></p>
+    <img class="img" alt="loading">
+    <audio id="audioPlayer"></audio>
+    <button onclick="playAudio()">播放</button>
+    <button onclick="pauseAudio()">暫停</button>
+    
+    <script>
+
+        let img = document.querySelector('.img');
+
+        let audioUrl = '';
+        const audio = document.getElementById('audioPlayer');
+        fetch('/music/music:3')
+        .then((res) => 
+        {
+            return res.json();
+
+        })
+        .then((data) => {
+            console.log(data);
+            audio.src = data.music_url;
+            img.src = data.cover_url;
+        })
+        .catch(err => console.error('Error fetching audio URL:', err));
+
+        
+
+        function playAudio() {
+            audio.play();
+        }
+
+        function pauseAudio() {
+            audio.pause();
+        }
+    </script>
+</body>
+</html>

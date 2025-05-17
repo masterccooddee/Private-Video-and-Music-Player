@@ -9,6 +9,7 @@ lerna-debug.log*
 
 music_cover
 tmp
+video_tmp
 node_modules
 dist
 dist-ssr

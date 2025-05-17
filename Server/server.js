@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import Redis from 'ioredis';
 import { serve_music } from './serve_music.js';
+import { serve_video } from './serve_video.js';
 
 const PORT = 3000;
 
@@ -38,7 +39,7 @@ const redis = new Redis(parseInt(process.env.REDIS_PORT), process.env.REDIS_HOST
 // Redis監聽事件
 redis.on('error', (err) => {
     console.error('Redis error: ', err);
-    
+
 });
 
 redis.on('connect', () => {
@@ -104,6 +105,13 @@ app.get('/get_all', async (req, res) => {
 app.get('/music/:id', async (req, res) => {
     const id = req.params.id;
     const output = await serve_music(id, db, redis);
+    res.setHeader('Content-Type', 'application/json');
+    res.send(output);
+});
+
+app.get('/video/:id', async (req, res) => {
+    const id = req.params.id;
+    const output = await serve_video(id, db, redis);
     res.setHeader('Content-Type', 'application/json');
     res.send(output);
 });
