@@ -11,17 +11,19 @@
     
 </head>
 <body>
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="1280" height="720"
+    <h1>Video.js DASH Example</h1>
+    <video id="my-video" class="video-js vjs-default-skin" preload="auto" controls width="1280" height="720"
         data-setup='{}'>
         
     </video>
     <script>
+        //const SubtitlesOctopus =  require('libass-wasm');
         const player = videojs('my-video', {
 
                 autoplay: false,
-                controls: true,
+                
             });
-        fetch('/video/video:4')
+        fetch('/video/video:2')
         .then(res =>{
            return res.json();
         })
@@ -33,7 +35,18 @@
             });
             player.poster(data.poster_url);
         })
-        
+        //player.src({
+        //    src: '../public/video_tmp/Steins;Gate/S1/2/output.mpd',
+        //    type: 'application/dash+xml',
+        //});
+
+        //let options = {
+        //        video: document.getElementById('my-video'), // HTML5 video element
+        //        subUrl: '../../Video/Steins;Gate/S1/Steins;Gate - 02 (BD 1280x720 AVC AAC).ass', // Link to subtitles
+        //        workerUrl: '/libassjs-worker.js', // Link to WebAssembly-based file "libassjs-worker.js"
+        //        legacyWorkerUrl: '/libassjs-worker-legacy.js' // Link to non-WebAssembly worker
+        //    };
+        //let instance = new SubtitlesOctopus(options);
     </script>
 </body>
 </html>

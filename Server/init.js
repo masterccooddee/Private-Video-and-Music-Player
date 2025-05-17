@@ -53,7 +53,8 @@ function initDB() {
             path TEXT NOT NULL UNIQUE,
             type TEXT NOT NULL,
             total_episodes TEXT,
-            poster TEXT NOT NULL
+            poster TEXT NOT NULL,
+            subtitle TEXT
         );
 
         CREATE TABLE video_series (
@@ -62,6 +63,7 @@ function initDB() {
             path TEXT,
             season TEXT,
             episode INTEGER,
+            subtitle TEXT,
             FOREIGN KEY (from_video_id) REFERENCES videos(id) ON DELETE CASCADE
         );
 

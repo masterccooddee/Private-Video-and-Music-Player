@@ -1,5 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { loading } from './loading.js';
+import si from 'systeminformation';
 
 export async function convertToDASH_single(inputFilePath, outputDir) {
 
@@ -7,7 +8,7 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
     let startTime = Date.now();
     return new Promise((resolve, reject) => {
 
-        ffmpeg.ffprobe(inputFilePath, (err, metadata) => {
+        ffmpeg.ffprobe(inputFilePath, async (err, metadata) => {
             if (err) {
                 console.error('Error reading file metadata:', err);
                 return reject(err);
@@ -21,8 +22,25 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
             console.log('Video codec:', codecName);
             console.log('Pixel format:', pixFmt);
 
-            // 根據編碼格式決定是否使用 GPU
-            const videoCodec = codecName === 'hevc' ? 'h264_nvenc' : 'copy';
+            // 動態檢測顯卡並選擇編碼器
+            const gpuInfo = await si.graphics();
+            const gpuVendor = gpuInfo.controllers?.[0]?.vendor?.toLowerCase() || 'unknown';
+            let videoCodec;
+
+            if (gpuVendor.includes('nvidia')) {
+                videoCodec = codecName === 'hevc' ? 'h264_nvenc' : 'copy'; // NVIDIA 硬體加速
+                console.log('Using NVIDIA GPU for encoding:', videoCodec);
+            } else if (gpuVendor.includes('amd')) {
+                let cpuname = await si.cpu();
+                videoCodec = codecName === 'hevc' ? 'h264_amf' : 'copy'; // AMD 硬體加速
+                console.log('Using AMD GPU for encoding:', videoCodec);
+            } else if (gpuVendor.includes('intel')) {
+                videoCodec = codecName === 'hevc' ? 'h264_qsv' : 'copy'; // Intel Quick Sync Video
+                console.log('Using Intel GPU for encoding:', videoCodec);
+            } else {
+                videoCodec = 'libx264'; // 默認使用軟體編碼
+                console.log('No supported GPU detected. Falling back to software encoding:', videoCodec);
+            }
 
         ffmpeg(inputFilePath)
                 .videoCodec(videoCodec)

@@ -11,6 +11,8 @@ import Redis from 'ioredis';
 import { serve_music } from './serve_music.js';
 import { serve_video } from './serve_video.js';
 
+import cors from 'cors';
+
 const PORT = 3000;
 
 
@@ -80,6 +82,7 @@ process.on('SIGINT', async () => {
 
 const app = express();
 app.use(morgan('dev'));
+// app.use(cors());
 
 app.use('/', express.static('../public'));
 app.use('/cover', express.static('../public/music_cover'));
