@@ -25,7 +25,7 @@ npm run dev
 http://localhost:5173
 ```
 ## Requirement
-- Redis
+- Redis    [安裝方法-設定中的REDIS_HOST](#設定)
 - FFmpeg   [安裝方法](https://vocus.cc/article/64701a2cfd897800014daed0)
 ## 路徑結構
 ```
