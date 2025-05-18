@@ -11,7 +11,7 @@ export async function convertAudio(audio_path, name) {
         return convert_promise.get(name);
     }
 
-    let output_path = path.join('..','public','tmp', `${name}.mp3`);
+    let output_path = path.join('..','public','music_tmp', `${name}.mp3`);
 
     const convert_audio =  new Promise((resolve, reject) => {
         ffmpeg(audio_path)
@@ -19,7 +19,7 @@ export async function convertAudio(audio_path, name) {
             .audioBitrate("128k")
             .on("end", async () => {
                 console.log(`${name} conversion finished`);
-                resolve(`/tmp/${name}.mp3`);
+                resolve(`/music_tmp/${name}.mp3`);
             })
             .on("error", (err) => {
                 console.error("Error during audio conversion: ", err);

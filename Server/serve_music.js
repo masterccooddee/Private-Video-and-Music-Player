@@ -6,7 +6,7 @@ export async function serve_music(id, db, redis) {
 
     //單曲exp: music:1  專輯exp: music:2-13
     const key = id;
-    console.log(id);
+    // console.log(id);
     const cache = await redis.get(key);
     if (cache) {
         const remainingTTL = await redis.ttl(key);
@@ -69,10 +69,10 @@ async function checkAudioSupport(music_path, name, output) {
     }
     else {
         try{
-            await fs.access(path.join('..', 'public', 'tmp'));
+            await fs.access(path.join('..', 'public', 'music_tmp'));
         }
         catch{
-            await fs.mkdir(path.join('..', 'public', 'tmp'), { recursive: true });
+            await fs.mkdir(path.join('..', 'public', 'music_tmp'), { recursive: true });
         }
         const converted_path = await convertAudio(music_path, name);
         return converted_path;
