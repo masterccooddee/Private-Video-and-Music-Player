@@ -2,6 +2,8 @@ import ffmpeg from 'fluent-ffmpeg';
 import { loading } from './loading.js';
 import si from 'systeminformation';
 
+
+
 export async function convertToDASH_single(inputFilePath, outputDir) {
 
 
@@ -66,7 +68,6 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                 })
                 .on('start', () => {
                     console.log('Start to convert to DASH of', inputFilePath);
-                    
                 })
                 .run();
         });

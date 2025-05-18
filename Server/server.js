@@ -114,9 +114,16 @@ app.get('/music/:id', async (req, res) => {
 
 app.get('/video/:id', async (req, res) => {
     const id = req.params.id;
-    const output = await serve_video(id, db, redis);
-    res.setHeader('Content-Type', 'application/json');
-    res.send(output);
+    const video_promise = serve_video(id, db, redis);
+    video_promise
+        .then((output) => {
+            res.setHeader('Content-Type', 'application/json');
+            res.send(output);
+        })
+        .catch((err) => {
+            console.error('Error serving video:', err);
+            res.status(500).send('Internal Server Error');
+        });
 });
 
 app.listen(PORT, () => {
