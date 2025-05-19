@@ -44,7 +44,7 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                 console.log('No supported GPU detected. Falling back to software encoding:', videoCodec);
             }
 
-        ffmpeg(inputFilePath)
+            ffmpeg(inputFilePath)
                 .videoCodec(videoCodec)
                 .audioCodec('aac')
                 .format('dash')
@@ -52,12 +52,12 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                     '-use_template 1',
                     '-use_timeline 1',
                     '-seg_duration 10',
-                    '-pix_fmt yuv420p', 
+                    '-pix_fmt yuv420p',
                 ])
                 .output(outputDir)
                 .on('end', () => {
                     console.log('\nDASH conversion completed successfully!');
-                    resolve(outputDir)        
+                    resolve(outputDir)
                 })
                 .on('error', (err) => {
                     console.error('Error during DASH conversion:', err);

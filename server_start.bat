@@ -1,13 +1,11 @@
 @echo off
-cd Redis
-start "Redis" start.bat
-cd ../MultiMediaPlayer
+cd ./MultiMediaPlayer
 call npm install
 call npm run build 
-xcopy .\dist\*.* ..\MultiMediaPlayer\public /E /Y 
-if not exist "..\MultiMediaPlayer\public\icons" mkdir "..\MultiMediaPlayer\public\icons"
-xcopy .\icons ..\MultiMediaPlayer\public\icons /E /Y
-cd ..\MultiMediaPlayer\Server
+xcopy .\dist\*.* .\public /E /Y 
+if not exist ".\public\icons" mkdir ".\public\icons"
+xcopy .\icons .\public\icons /E /Y
+cd .\Server
 start "Server" /max node server.js
 echo Server started
 pause
