@@ -26,17 +26,17 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
 
             // 動態檢測顯卡並選擇編碼器
             const gpuInfo = await si.graphics();
-            const gpuVendor = gpuInfo.controllers?.[0]?.vendor?.toLowerCase() || 'unknown';
+            const gpuVendor = gpuInfo.controllers.map((item) => (item.vendor.toLowerCase()));
+            let gpuSet = new Set(gpuVendor);
             let videoCodec;
 
-            if (gpuVendor.includes('nvidia')) {
+            if (gpuSet.has('nvidia')) {
                 videoCodec = codecName === 'hevc' ? 'h264_nvenc' : 'copy'; // NVIDIA 硬體加速
                 console.log('Using NVIDIA GPU for encoding:', videoCodec);
-            } else if (gpuVendor.includes('amd')) {
-                let cpuname = await si.cpu();
+            } else if (gpuSet.has('amd')) {
                 videoCodec = codecName === 'hevc' ? 'h264_amf' : 'copy'; // AMD 硬體加速
                 console.log('Using AMD GPU for encoding:', videoCodec);
-            } else if (gpuVendor.includes('intel')) {
+            } else if (gpuSet.has('intel')) {
                 videoCodec = codecName === 'hevc' ? 'h264_qsv' : 'copy'; // Intel Quick Sync Video
                 console.log('Using Intel GPU for encoding:', videoCodec);
             } else {
@@ -73,4 +73,5 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
         });
     });
 }
+
 
