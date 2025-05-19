@@ -1,5 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { init } from './init.js';
 import get_all from './get_all_file.js';
 import { get_from_type } from './get_all_file.js';
@@ -14,8 +16,10 @@ import expire_handle from './expirehandle.js';
 
 import cors from 'cors';
 
-const PORT = 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const PORT = 3000;
 
 console.log('Starting server...');
 await init()
@@ -130,4 +134,9 @@ app.get('/video/:id', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+// 處理所有前端頁面
+app.get(/^\/(tag|upload|profile|favorites|rank|login)(\/.*)?$/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
