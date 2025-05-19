@@ -1,6 +1,5 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import styles from './Sidebar.module.css'
+import React from 'react';
+import styles from './Sidebar.module.css';
 
 const navItems = [
   { icon: 'home.svg', text: '首頁', to: '/' },
@@ -10,13 +9,15 @@ const navItems = [
   { icon: 'upload.svg', text: '上傳資源', to: '/upload' },
   { icon: 'user.svg', text: '個人中心', to: '/profile' },
   { icon: 'login.svg', text: '登入 / 註冊', to: '/login' }
-]
+];
 
 function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode }) {
-  const location = useLocation()
-
   return (
-    <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : styles.expanded} ${isDarkMode ? styles.darkMode : ''}`}>
+    <aside
+      className={`${styles.sidebar} ${
+        isCollapsed ? styles.collapsed : styles.expanded
+      } ${isDarkMode ? styles.darkMode : ''}`}
+    >
       <div className={styles.sidebarHeader}>
         <button id="toggle-btn" className={styles.toggleBtn} onClick={onToggleSidebar}>
           <img src="/icons/menu.svg" className={styles.icon} />
@@ -25,14 +26,12 @@ function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode })
       </div>
       <ul className={styles.navList}>
         {navItems.map((item, i) => (
-          <Link
-            to={item.to}
-            className={`${styles.sidebarLink} ${location.pathname === item.to ? styles.active : ''}`}
-            key={i}
-          >
-            <img src={`/icons/${item.icon}`} className={styles.icon} />
-            <span>{item.text}</span>
-          </Link>
+          <li key={i}>
+            <a href={item.to} className={styles.sidebarLink}>
+              <img src={`/icons/${item.icon}`} className={styles.icon} />
+              <span>{item.text}</span>
+            </a>
+          </li>
         ))}
         <li className={styles.sidebarLink} onClick={onToggleDarkMode}>
           <img
@@ -43,7 +42,7 @@ function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode })
         </li>
       </ul>
     </aside>
-  )
+  );
 }
 
-export default Sidebar
+export default Sidebar;
