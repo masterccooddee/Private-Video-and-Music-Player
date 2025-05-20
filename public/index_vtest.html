@@ -8,7 +8,7 @@
     <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet">
     <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-dash/dist/videojs-dash.min.js"></script>
-    
+
 </head>
 
 <body>
@@ -18,13 +18,13 @@
     </video>
 
     <script type="module">
-        import "/node_modules/@jellyfin/libass-wasm/dist/js/subtitles-octopus.js";
+        import SubtitlesOctopus from "/libass-wasm/dist/js/subtitles-octopus.js";
         const player = videojs('my-video', {
             autoplay: false,
         });
 
         // 設定影片來源
-        fetch('/video/video:3')
+        fetch('/video/video:2')
             .then(res => res.json())
             .then(data => {
                 player.src({
@@ -34,7 +34,11 @@
                 player.poster(data.poster_url);
 
                 // 添加多個字幕選項
-                const subtitles = data.subtitle_url.map((sub,index) => ({
+                if (data.subtitle_url.length === 0) {
+                    console.log('No subtitles available');
+                    return;
+                }
+                const subtitles = data.subtitle_url.map((sub, index) => ({
                     label: `${index + 1}`,
                     srclang: 'zh-TW',
                     subUrl: sub,
@@ -67,7 +71,7 @@
                                 subUrl: selectedSubtitle.subUrl,
                                 fonts: ['/fonts/SourceHanSansTC-Medium.otf'],
                                 debug: true,
-                                workerUrl: '/node_modules/@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker.js',
+                                workerUrl: '/libass-wasm/dist/js/subtitles-octopus-worker.js',
                             };
                             octopusInstance = new SubtitlesOctopus(options);
                             subtitlesEnabled = true;
