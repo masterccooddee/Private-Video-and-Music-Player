@@ -179,10 +179,6 @@ app.post('/api/upload', upload.fields([
       return res.status(409).send('已有相同音樂或影片檔案，請重新命名');
     }
 
-    if (cover && fs.existsSync(coverPath)) {
-      return res.status(409).send('已有相同封面圖片，請重新命名');
-    }
-
     if (!fs.existsSync(targetFolder)) {
       fs.mkdirSync(targetFolder, { recursive: true });
     }
