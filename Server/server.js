@@ -1,5 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { init } from './init.js';
 import get_all from './get_all_file.js';
 import { get_from_type } from './get_all_file.js';
@@ -12,11 +14,16 @@ import { serve_music } from './serve_music.js';
 import { serve_video } from './serve_video.js';
 import expire_handle from './expirehandle.js';
 import { watchingFile } from './listenfilechange.js';
+import multer from 'multer';
+import fs from 'fs';
 
 import cors from 'cors';
 
-const PORT = 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const upload = multer({ storage: multer.memoryStorage() });
 
+const PORT = 3000;
 
 console.log('Starting server...');
 await init()
@@ -133,4 +140,62 @@ app.get('/video/:id', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+// 處理所有前端頁面
+app.get(/^\/(tag|upload|profile|favorites|rank|login)(\/.*)?$/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// 處理上傳音樂或影片的請求 
+app.post('/api/upload', upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'cover', maxCount: 1 }
+]), async (req, res) => {
+  const { type, title } = req.body;
+  const file = req.files?.file?.[0];
+  const cover = req.files?.cover?.[0];
+
+  if (!file || !title) {
+    return res.status(400).send('缺少檔案或標題');
+  }
+
+  const baseDir = type === 'music' ? '../../Music' : '../../Video';
+  const useSubfolder = !!cover;
+  const safeTitle = title.trim().replace(/[<>:"/\\|?*\x00-\x1F]/g, '');
+  const targetFolder = useSubfolder
+    ? path.join(baseDir, safeTitle)
+    : baseDir;
+
+  const fileExt = path.extname(file.originalname);
+  const filePath = path.join(targetFolder, `${safeTitle}${fileExt}`);
+
+  const coverPath = cover
+    ? path.join(targetFolder, `${safeTitle}${path.extname(cover.originalname)}`)
+    : null;
+
+  try {
+    if (fs.existsSync(filePath)) {
+      return res.status(409).send('已有相同音樂或影片檔案，請重新命名');
+    }
+
+    if (cover && fs.existsSync(coverPath)) {
+      return res.status(409).send('已有相同封面圖片，請重新命名');
+    }
+
+    if (!fs.existsSync(targetFolder)) {
+      fs.mkdirSync(targetFolder, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, file.buffer);
+
+    if (cover) {
+      fs.writeFileSync(coverPath, cover.buffer);
+    }
+
+    res.send({ success: true });
+  } catch (err) {
+    console.error('上傳失敗:', err);
+    res.status(500).send('儲存檔案錯誤');
+  }
 });
