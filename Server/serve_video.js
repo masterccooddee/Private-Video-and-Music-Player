@@ -45,7 +45,7 @@ export async function serve_video(id, db, redis) {
             const video_path = video_series.path;
             const video_season = video_series.season;
             const video_episode = video_series.episode;
-            const video_subtitle = video_series.subtitle;
+            const video_subtitle = JSON.parse(video_series.subtitle);
             let output_dir = '../public/video_tmp/' + video_name + '/' + video_season + '/' + video_episode;
             try {
                 await fs.access(output_dir);
@@ -84,7 +84,7 @@ export async function serve_video(id, db, redis) {
             const video_path = video.path;
             const video_name = video.name;
             const video_poster = video.poster;
-            const video_subtitle = video.subtitle;
+            const video_subtitle = JSON.parse(video.subtitle);
 
             let output_dir = '../public/video_tmp/' + video_name;
             try {

@@ -89,7 +89,7 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
-// watchingFile();
+watchingFile(db, redis);
 
 const app = express();
 app.use(morgan('dev'));

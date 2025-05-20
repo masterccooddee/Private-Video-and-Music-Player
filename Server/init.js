@@ -183,7 +183,7 @@ async function classifyMedia(db) {
                     // 如果只有一個影片檔案，則是單影片
                     if (videoFiles.length == 1) {
                         await classifyVideo(db, filePath, folder, true);
-                        await findsubtitlesOneVideo(subfolders, db, folder);
+                        await findsubtitlesOneVideo(subfolders, db, folder, folderpath, true);
                     }
 
                     // 如果有多個影片檔案，則是系列影片
@@ -223,6 +223,7 @@ async function classifyMedia(db) {
             // 如果是檔案，則是單影片
             const filePath = path.join(videoFolder, folder);
             classifyVideo(db, filePath, path.basename(folder, path.extname(folder)), false);
+            findsubtitlesOneVideo(folders, db, path.basename(folder, path.extname(folder)), videoFolder,false);
         }
         finished_folder++;
         loading(finished_folder, folders.length, starttime);
@@ -384,7 +385,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
 
     //找字幕
     const subtitles = seasonFiles.filter(file => {
-        return path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt';
+        return (path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt' || path.extname(file).toLowerCase() === '.vtt');
     }).sort((a, b) => a.localeCompare(b));
 
     let total_episodes = db.prepare('SELECT total_episodes FROM videos WHERE name = ?').get(seriesname);
@@ -410,6 +411,16 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
             const filePath = path.join(seasonFolder, file);
             let subtitle = subtitles.filter(sub => {
                 return sub.includes(path.basename(file, path.extname(file)));
+            });
+            subtitle = subtitle.map(sub => {
+                let full_path = path.join(seasonFolder, sub).replace(/\\/g, '/');
+                const match = full_path.match(/\/Video\/.*/);
+                if (match) {
+                    return match[0];
+                }
+                else{
+                    return '';
+                }
             });
 
 
@@ -506,23 +517,51 @@ async function findCoverofMusic(musicpath) {
     }
 }
 
-async function findsubtitlesOneVideo(video_folder, db, name) {
+async function findsubtitlesOneVideo(video_folder, db, name, filepath, have_Folder = false) {
+
     const subtitles = video_folder.filter(file => {
-        return (path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt');
+        return (path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt' || path.extname(file).toLowerCase() === '.vtt');
     });
 
-    let sub2db = JSON.stringify(subtitles);
+    let video_sub = [];
+
+    if(!have_Folder) {
+    video_sub = subtitles.filter(sub => {
+        return sub.includes(name)
+    })
+    .map(sub => {
+            let full_path = path.join(filepath, sub).replace(/\\/g, '/');
+            const match = full_path.match(/\/Video\/.*/);
+            if (match) {
+                return match[0];
+            }
+            else {
+                return '';
+            }
+        });
+    }
+    else{
+        video_sub = subtitles.map(sub =>{
+            let full_path = path.join(filepath, sub).replace(/\\/g, '/');
+            const match = full_path.match(/\/Video\/.*/);
+            if (match) {
+                return match[0];
+            }
+            else {
+                return '';
+            }
+        });
+    }
+
+    
+    
+    let sub2db = JSON.stringify(video_sub);
     // console.log(sub2db);
     let update_sub = db.prepare('UPDATE videos SET subtitle = @subtitle WHERE name = @name');
     update_sub.run({ subtitle: sub2db, name: name })
 
 }
 
-async function findsubtitlesSeriesVideo(video_folder, db, name) {
-    const subtitles = video_folder.filter(file => {
-        return (path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt');
-    });
-}
 
 // let file = await fs.readdir('C:/Users/arthu/Desktop/School/3/JS/Project/Video/ARIA The CREPUSCOLO');
 // let output = await findsubtitlesOneVideo(file);
