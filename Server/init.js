@@ -167,7 +167,7 @@ async function classifyMedia(db) {
                     await classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
 
                 } else {
-                    // 如果是檔案，有可能是單影片或series影片的海報
+                    // 如果是檔案，有可能是單影片或series影片的海報或字幕
                     const filePath = subfolderpath;
                     const fileExt = path.extname(filePath).toLowerCase();
 
@@ -183,6 +183,7 @@ async function classifyMedia(db) {
                     // 如果只有一個影片檔案，則是單影片
                     if (videoFiles.length == 1) {
                         await classifyVideo(db, filePath, folder, true);
+                        await findsubtitlesOneVideo(subfolders, db, folder);
                     }
 
                     // 如果有多個影片檔案，則是系列影片
@@ -368,7 +369,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
     let seasonFolder = seriesPath;
 
     const search_video_id = db.prepare('SELECT id FROM videos WHERE name = ?', { cached: true });
-    const insert_video_series = db.prepare('INSERT INTO video_series (from_video_id, path, season, episode) VALUES (@from_video_id,@path,@season,@episode)');
+    const insert_video_series = db.prepare('INSERT INTO video_series (from_video_id, path, season, episode, subtitle) VALUES (@from_video_id,@path,@season,@episode,@subtitle)');
 
     let seasonFiles = await fs.readdir(seriesPath);
 
@@ -380,6 +381,11 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
             return fileExt === '.mp4' || fileExt === '.mkv' || fileExt === '.avi';
         })
         .sort((a, b) => a.localeCompare(b)); // 按字典順序排序
+
+    //找字幕
+    const subtitles = seasonFiles.filter(file => {
+        return path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt';
+    }).sort((a, b) => a.localeCompare(b));
 
     let total_episodes = db.prepare('SELECT total_episodes FROM videos WHERE name = ?').get(seriesname);
     // console.log('total_episodes:', total_episodes);
@@ -402,12 +408,17 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
 
         files.forEach((file, index) => {
             const filePath = path.join(seasonFolder, file);
+            let subtitle = subtitles.filter(sub => {
+                return sub.includes(path.basename(file, path.extname(file)));
+            });
+
 
             insert_video_series.run({
                 from_video_id: f_v_id,
                 path: filePath,
                 season: season,
-                episode: index + 1
+                episode: index + 1,
+                subtitle: JSON.stringify(subtitle)
             });
         });
     });
@@ -494,3 +505,25 @@ async function findCoverofMusic(musicpath) {
         return null;
     }
 }
+
+async function findsubtitlesOneVideo(video_folder, db, name) {
+    const subtitles = video_folder.filter(file => {
+        return (path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt');
+    });
+
+    let sub2db = JSON.stringify(subtitles);
+    // console.log(sub2db);
+    let update_sub = db.prepare('UPDATE videos SET subtitle = @subtitle WHERE name = @name');
+    update_sub.run({ subtitle: sub2db, name: name })
+
+}
+
+async function findsubtitlesSeriesVideo(video_folder, db, name) {
+    const subtitles = video_folder.filter(file => {
+        return (path.extname(file).toLowerCase() === '.ass' || path.extname(file).toLowerCase() === '.srt');
+    });
+}
+
+// let file = await fs.readdir('C:/Users/arthu/Desktop/School/3/JS/Project/Video/ARIA The CREPUSCOLO');
+// let output = await findsubtitlesOneVideo(file);
+// console.log(JSON.parse(output)[0])
