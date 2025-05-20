@@ -17,6 +17,9 @@ media.db
 *.local
 .env
 dev/*
+public/icons
+public/assets
+public/cover
 
 # Editor directories and files
 .vscode/*

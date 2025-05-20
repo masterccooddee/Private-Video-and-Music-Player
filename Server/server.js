@@ -90,6 +90,7 @@ app.use('/', express.static('../public'));
 app.use('/cover', express.static('../public/music_cover'));
 app.use('/Music', express.static('../../Music'));
 app.use('/Video', express.static('../../Video'));
+app.use('/node_modules', express.static('../node_modules'));
 
 app.get('/get_all', async (req, res) => {
 

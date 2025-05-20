@@ -9,7 +9,7 @@ export async function serve_video(id, db, redis) {
     const cache = await redis.get(key);
     
     if(cache){
-        console.log('cache:', cache);
+        
         const remainingTTL = await redis.ttl(key);
         if (remainingTTL >= 0)
             await redis.expire(key, 600 + remainingTTL); // Refresh cache expiration time

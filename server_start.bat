@@ -1,5 +1,4 @@
 @echo off
-cd ./MultiMediaPlayer
 call npm install
 call npm run build 
 xcopy .\dist\*.* .\public /E /Y 

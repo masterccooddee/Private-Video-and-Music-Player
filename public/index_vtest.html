@@ -1,54 +1,95 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DASH TEST</title>
+    <title>Video.js with Multiple Subtitles</title>
     <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet">
     <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-dash/dist/videojs-dash.min.js"></script>
-
+    <script src="/node_modules/@jellyfin/libass-wasm/dist/js/subtitles-octopus.js"></script>
 </head>
 
 <body>
-    <h1>Video.js DASH Example</h1>
+    <h1>Video.js with Multiple Subtitles</h1>
     <video id="my-video" class="video-js vjs-default-skin" preload="auto" controls width="1280" height="720"
         data-setup='{}'>
-
     </video>
-    <script>
-        //const SubtitlesOctopus =  require('libass-wasm');
+
+    <script type="module">
         const player = videojs('my-video', {
-
             autoplay: false,
-
         });
-        fetch('/video/video:2')
-            .then(res => {
-                return res.json();
-            })
+
+        // 設定影片來源
+        fetch('/video/video:4-5')
+            .then(res => res.json())
             .then(data => {
-                console.log(data);
                 player.src({
                     src: data.video_url,
                     type: 'application/dash+xml',
                 });
                 player.poster(data.poster_url);
-            })
-        //player.src({
-        //    src: '../public/video_tmp/Steins;Gate/S1/2/output.mpd',
-        //    type: 'application/dash+xml',
-        //});
 
-        //let options = {
-        //        video: document.getElementById('my-video'), // HTML5 video element
-        //        subUrl: '../../Video/Steins;Gate/S1/Steins;Gate - 02 (BD 1280x720 AVC AAC).ass', // Link to subtitles
-        //        workerUrl: '/libassjs-worker.js', // Link to WebAssembly-based file "libassjs-worker.js"
-        //        legacyWorkerUrl: '/libassjs-worker-legacy.js' // Link to non-WebAssembly worker
-        //    };
-        //let instance = new SubtitlesOctopus(options);
+                // 添加多個字幕選項
+                const subtitles = [
+                    {
+                        label: 'English Subtitles',
+                        subUrl: '/Video/Steins;Gate/S1/Steins;Gate - 02 (BD 1280x720 AVC AAC).ass',
+                        srclang: 'en',
+                    },
+                    {
+                        label: 'Chinese Subtitles',
+                        subUrl: '/Video/Steins;Gate/S1/Steins;Gate - 03 (BD 1280x720 AVC AAC).ass',
+                        srclang: 'zh',
+                    },
+                ];
+
+                subtitles.forEach(sub => {
+                    player.addRemoteTextTrack({
+                        kind: 'subtitles',
+                        label: sub.label,
+                        srclang: sub.srclang,
+                        default: false,
+                    }, false);
+                });
+
+                let subtitlesEnabled = false;
+                let octopusInstance = null;
+
+                // 監聽字幕選擇事件
+                player.textTracks().addEventListener('change', () => {
+                    const activeTrack = Array.from(player.textTracks()).find(track => track.mode === 'showing');
+                    if (activeTrack) {
+                        const selectedSubtitle = subtitles.find(sub => sub.label === activeTrack.label);
+                        if (selectedSubtitle) {
+                            // 啟用 SubtitlesOctopus
+                            if (octopusInstance) {
+                                octopusInstance.dispose(); // 銷毀當前的實例
+                            }
+                            const options = {
+                                video: player.el().querySelector('video'),
+                                subUrl: selectedSubtitle.subUrl,
+                                fonts: ['/fonts/SourceHanSansTC-Medium.otf'],
+                                debug: true,
+                                workerUrl: '/node_modules/@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker.js',
+                            };
+                            octopusInstance = new SubtitlesOctopus(options);
+                            subtitlesEnabled = true;
+                            console.log(`SubtitlesOctopus enabled for ${selectedSubtitle.label}`);
+                        }
+                    } else {
+                        // 關閉 SubtitlesOctopus
+                        if (subtitlesEnabled && octopusInstance) {
+                            octopusInstance.dispose();
+                            octopusInstance = null;
+                            subtitlesEnabled = false;
+                            console.log('SubtitlesOctopus disabled');
+                        }
+                    }
+                });
+            });
     </script>
 </body>
 
