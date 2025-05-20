@@ -7,15 +7,15 @@ let convert_promise = new Map();
 export async function serve_video(id, db, redis) {
     const key = id;
     const cache = await redis.get(key);
-    
-    if(cache){
-        
+
+    if (cache) {
+        console.log('cache:', cache);
         const remainingTTL = await redis.ttl(key);
         if (remainingTTL >= 0)
             await redis.expire(key, 600 + remainingTTL); // Refresh cache expiration time
         return cache;
     }
-    else{
+    else {
 
         // 檢查是否是正在轉換的影片
         if (converting_set.has(key)) {
@@ -23,11 +23,11 @@ export async function serve_video(id, db, redis) {
             return convert_promise.get(key);
         }
 
-        try{
-            await fs.access(path.join('..','public','video_tmp'));
+        try {
+            await fs.access(path.join('..', 'public', 'video_tmp'));
         }
-        catch{
-            await fs.mkdir(path.join('..','public','video_tmp'), { recursive: true });
+        catch {
+            await fs.mkdir(path.join('..', 'public', 'video_tmp'), { recursive: true });
         }
 
         let video_id = '';
@@ -38,13 +38,14 @@ export async function serve_video(id, db, redis) {
             video_id = parseID.groups.video_id;
             video_series_id = parseID.groups.series_id;
 
-            const video_series = await db.get('SELECT path, season, episode FROM video_series WHERE id = ?', [video_series_id]);
+            const video_series = await db.get('SELECT path, season, episode, subtitle FROM video_series WHERE id = ?', [video_series_id]);
             let video = await db.get('SELECT name, poster FROM videos WHERE id = ?', [video_id]);
             const video_name = video.name;
             const video_poster = video.poster;
             const video_path = video_series.path;
             const video_season = video_series.season;
             const video_episode = video_series.episode;
+            const video_subtitle = video_series.subtitle;
             let output_dir = '../public/video_tmp/' + video_name + '/' + video_season + '/' + video_episode;
             try {
                 await fs.access(output_dir);
@@ -60,6 +61,7 @@ export async function serve_video(id, db, redis) {
                     let output = {
                         video_url: '/video_tmp/' + video_name + '/' + video_season + '/' + video_episode + '/output.mpd',
                         poster_url: video_poster,
+                        subtitle_url: video_subtitle
                     };
                     output = JSON.stringify(output);
                     redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
@@ -78,10 +80,11 @@ export async function serve_video(id, db, redis) {
         }
         else {
             video_id = id.split(':')[1];
-            const video = await db.get('SELECT path, name, poster FROM videos WHERE id = ?', [video_id]);
+            const video = await db.get('SELECT path, name, poster, subtitle FROM videos WHERE id = ?', [video_id]);
             const video_path = video.path;
             const video_name = video.name;
             const video_poster = video.poster;
+            const video_subtitle = video.subtitle;
 
             let output_dir = '../public/video_tmp/' + video_name;
             try {
@@ -90,7 +93,7 @@ export async function serve_video(id, db, redis) {
                 await fs.mkdir(output_dir, { recursive: true });
             }
             output_dir = output_dir + '/' + 'output.mpd';
-            
+
             const conversionPromise = new Promise(async (resolve, reject) => {
                 try {
                     converting_set.add(key); // 標記為正在轉換
@@ -98,6 +101,7 @@ export async function serve_video(id, db, redis) {
                     let output = {
                         video_url: '/video_tmp/' + video_name + '/output.mpd',
                         poster_url: video_poster,
+                        subtitle_url: video_subtitle
                     };
                     output = JSON.stringify(output);
                     redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
