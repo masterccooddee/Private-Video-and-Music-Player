@@ -11,6 +11,7 @@ import Redis from 'ioredis';
 import { serve_music } from './serve_music.js';
 import { serve_video } from './serve_video.js';
 import expire_handle from './expirehandle.js';
+import { watchingFile } from './listenfilechange.js';
 
 import cors from 'cors';
 
@@ -66,10 +67,10 @@ subscriber.psubscribe('__keyevent@0__:expired', (err, count) => {
 });
 
 // 處理過期事件
-subscriber.on('pmessage', (pattern,channel,message) => {
+subscriber.on('pmessage', (pattern, channel, message) => {
     console.log(`鍵過期: ${message}`);
     expire_handle(db, message)
-    
+
 });
 
 
@@ -81,6 +82,7 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
+watchingFile();
 
 const app = express();
 app.use(morgan('dev'));
