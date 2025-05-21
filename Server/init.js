@@ -183,7 +183,7 @@ async function classifyMedia(db) {
 
                     // 如果只有一個影片檔案，則是單影片
                     if (videoFiles.length == 1) {
-                        await classifyVideo(db, filePath, folder, true);
+                        await classifyVideo(db, filePath, folder);
                         await findsubtitlesOneVideo(subfolders, db, folder, folderpath, true);
                     }
 
@@ -223,7 +223,7 @@ async function classifyMedia(db) {
         else {
             // 如果是檔案，則是單影片
             const filePath = path.join(videoFolder, folder);
-            classifyVideo(db, filePath, path.basename(folder, path.extname(folder)), false);
+            classifyVideo(db, filePath, path.basename(folder, path.extname(folder)));
             findsubtitlesOneVideo(folders, db, path.basename(folder, path.extname(folder)), videoFolder,false);
         }
         finished_folder++;
@@ -306,9 +306,8 @@ async function classifyMedia(db) {
 }
 
 
-async function classifyVideo(db, filePath, folder, have_Folder = false) {
+async function classifyVideo(db, filePath, folder) {
 
-    const fileName = folder;
 
     const fileExt = path.extname(filePath).toLowerCase();
     const search_name = db.prepare('SELECT name FROM videos WHERE name = ?');

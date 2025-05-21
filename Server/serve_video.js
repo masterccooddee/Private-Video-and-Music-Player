@@ -54,7 +54,7 @@ export async function serve_video(id, db, redis) {
             }
             output_dir = output_dir + '/' + 'output.mpd';
 
-            const conversionPromise = new Promise(async (resolve, reject) => {
+            const conversionPromise = (async () => {
                 try {
                     converting_set.add(key); // 標記為正在轉換
                     await convertToDASH_single(video_path, output_dir);
@@ -65,14 +65,12 @@ export async function serve_video(id, db, redis) {
                     };
                     output = JSON.stringify(output);
                     redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
-                    resolve(output); // 解析 Promise
-                } catch (err) {
-                    reject(err); // 如果轉換失敗，拒絕 Promise
+                    return output; // 直接返回結果
                 } finally {
                     converting_set.delete(key); // 移除轉換標記
                     convert_promise.delete(key); // 清理 Promise
                 }
-            });
+            })();
 
             convert_promise.set(key, conversionPromise); // 存儲 Promise
             return conversionPromise; // 返回 Promise
@@ -94,7 +92,7 @@ export async function serve_video(id, db, redis) {
             }
             output_dir = output_dir + '/' + 'output.mpd';
 
-            const conversionPromise = new Promise(async (resolve, reject) => {
+            const conversionPromise = (async () => {
                 try {
                     converting_set.add(key); // 標記為正在轉換
                     await convertToDASH_single(video_path, output_dir, key);
@@ -105,14 +103,12 @@ export async function serve_video(id, db, redis) {
                     };
                     output = JSON.stringify(output);
                     redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
-                    resolve(output); // 解析 Promise
-                } catch (err) {
-                    reject(err); // 如果轉換失敗，拒絕 Promise
-                } finally {
+                    return output; // 解析 Promise
+                }finally {
                     converting_set.delete(key); // 移除轉換標記
                     convert_promise.delete(key); // 清理 Promise
                 }
-            });
+            })();
             convert_promise.set(key, conversionPromise); // 存儲 Promise
             return conversionPromise; // 返回 Promise
         }
