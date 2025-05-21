@@ -11,7 +11,7 @@ music_cover
 music_tmp
 video_tmp
 node_modules
-dist
+/dist
 dist-ssr
 media.db
 *.local
