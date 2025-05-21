@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 export default function HomePage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     axios.get('/get_all')
@@ -19,25 +21,99 @@ export default function HomePage() {
       })
   }, [])
 
+  const renderMediaList = (items, type) => {
+    if (!items || items.length === 0) {
+      return <div style={{ color: '#666' }}>無{type === 'video' ? '影片' : '音樂'}資料</div>
+    }
+
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: '20px',
+      }}>
+        {items.map(item => {
+          const hasImage =
+            (type === 'video' && item.poster && item.poster !== '-1') ||
+            (type === 'music' && item.cover)
+
+          const imageUrl =
+            type === 'video'
+              ? `/thumbnails/${item.poster}`
+              : `/covers/${item.cover}`
+
+          return (
+            <div
+              key={item.id}
+              onClick={() => navigate(`/${type}/${item.id}`)}
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'box-shadow 0.2s',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)')}
+              onMouseOut={(e) => (e.currentTarget.style.boxShadow = 'none')}
+            >
+              <div style={{
+                width: '100%',
+                aspectRatio: '16/9',
+                backgroundColor: '#000',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {hasImage ? (
+                  <img
+                    src={imageUrl}
+                    alt={item.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <span style={{ color: 'white', fontSize: '14px', opacity: 0.5 }}>無圖片</span>
+                )}
+              </div>
+              <div style={{ padding: '12px' }}>
+                <div style={{
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {item.name || '無標題'}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
-    <div>
-      <h1>這是首頁</h1>
+    <div style={{ padding: '24px' }}>
+      <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '16px' }}>這是首頁</h1>
+
       {loading && <div>載入中...</div>}
       {error && <div style={{ color: 'red' }}>發生錯誤：{error.message}</div>}
 
-      {/* 保持主架構在，即使沒有資料 */}
-      <div>
-        <h3>影片</h3>
-        {data?.videos?.length > 0
-          ? <pre>{JSON.stringify(data.videos, null, 2)}</pre>
-          : <div style={{ color: 'gray' }}>無影片資料</div>}
+      <div style={{ marginBottom: '32px' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>影片</h3>
+        {renderMediaList(data?.videos, 'video')}
       </div>
 
       <div>
-        <h3>音樂</h3>
-        {data?.music?.length > 0
-          ? <pre>{JSON.stringify(data.music, null, 2)}</pre>
-          : <div style={{ color: 'gray' }}>無音樂資料</div>}
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>音樂</h3>
+        {renderMediaList(data?.music, 'music')}
       </div>
     </div>
   )
