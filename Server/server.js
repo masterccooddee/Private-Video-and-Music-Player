@@ -111,7 +111,6 @@ app.get(/\/Video.*.srt/, async (req, res) => {
 });
 
 app.use('/Video', express.static('../../Video'));
-app.use('/node_modules', express.static('../node_modules'));
 
 app.get('/get_all', async (req, res) => {
 
