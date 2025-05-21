@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import sqlite from 'better-sqlite3';
 import { fileURLToPath } from 'url';
+import process from 'node:process';
 import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
@@ -512,7 +513,7 @@ async function findCoverofMusic(musicpath) {
             return null;
         }
     } catch (error) {
-        // console.error('Error extracting cover from music file:', error);
+        console.error('Error extracting cover from music file:', error);
         return null;
     }
 }

@@ -12,7 +12,7 @@ export function watchingFile(db, redis) {
     const watcher = chokidar.watch([videoDir, musicDir], {
         persistent: true,
         ignoreInitial: true, // 忽略初始事件
-        ignored: /(^|[\/\\])\../, // 忽略隱藏文件
+        ignored: /(^|[/\\])\../, // 忽略隱藏文件
         awaitWriteFinish: {
             stabilityThreshold: 200, // 等待穩定時間
             pollInterval: 100, // 輪詢間隔
