@@ -437,7 +437,6 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
     insert_series(sortedFiles);
     // console.log('Inserted series videos into database:', seriesname, season);
 
-
 }
 
 async function findPosterFromTMDB(db, tmdb_key) {
