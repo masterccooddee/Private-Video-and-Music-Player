@@ -12,7 +12,19 @@ export function watchingFile(db, redis) {
     const watcher = chokidar.watch([videoDir, musicDir], {
         persistent: true,
         ignoreInitial: true, // 忽略初始事件
-        ignored: /(^|[/\\])\../, // 忽略隱藏文件
+        ignored: (filePath) => {
+            const validExtensions = ['.mkv', '.mp4', '.avi', '.jpg', '.png', '.jpeg', '.webp', '.ass', '.srt', '.vtt','.mp3','.m4a','.wav','.flac','.acc','.ogg'];
+            const ext = path.extname(filePath).toLowerCase(); // 獲取副檔名
+            const isHidden = /(^|[/\\])\../.test(filePath); // 檢查是否為隱藏檔案
+            // console.log(`Checking file: ${filePath}, Extension: ${ext}, Is Hidden: ${isHidden}`);
+
+            if (!ext) {
+                return isHidden; // 只檢查是否為隱藏目錄
+            }
+
+            // 忽略隱藏檔案，或者副檔名不在允許清單中的檔案
+            return isHidden || !validExtensions.includes(ext);
+        },
         awaitWriteFinish: {
             stabilityThreshold: 200, // 等待穩定時間
             pollInterval: 100, // 輪詢間隔
