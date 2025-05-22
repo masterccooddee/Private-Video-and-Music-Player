@@ -1,4 +1,5 @@
 @echo off
+cls
 call npm install
 call npm run build 
 xcopy .\dist\*.* .\public /E /Y 
