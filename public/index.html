@@ -1,115 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video.js with Multiple Subtitles</title>
-    <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet">
-    <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-dash/dist/videojs-dash.min.js"></script>
-
-</head>
-
-<body>
-    <h1>Video.js with Multiple Subtitles</h1>
-    <video id="my-video" class="video-js vjs-default-skin" preload="auto" controls width="1280" height="720"
-        data-setup='{}'>
-    </video>
-
-    <script type="module">
-        import SubtitlesOctopus from "/libass-wasm/dist/js/subtitles-octopus.js";
-        const player = videojs('my-video', {
-            autoplay: false,
-        });
-
-        // 設定影片來源
-        fetch('/video/video:5-32')
-            .then(res => res.json())
-            .then(data => {
-                player.src({
-                    src: data.video_url,
-                    type: 'application/dash+xml',
-                });
-                player.poster(data.poster_url);
-
-                // 添加多個字幕選項
-                if (data.subtitle_url.length === 0) {
-                    console.log('No subtitles available');
-                    return;
-                }
-                const subtitles = data.subtitle_url.map((sub, index) => ({
-                    label: `${index + 1}`,
-                    srclang: 'zh-TW',
-                    subUrl: sub,
-                }));
-
-                subtitles.forEach(sub => {
-                    if (sub.subUrl.includes('.srt') || sub.subUrl.includes('.vtt')) {
-                        player.addRemoteTextTrack({
-                            kind: 'subtitles',
-                            label: sub.label,
-                            srclang: sub.srclang,
-                            src: sub.subUrl,
-                            default: false,
-                        }, false);
-                    } else {
-                        // 使用 SubtitlesOctopus
-                        player.addRemoteTextTrack({
-                            kind: 'subtitles',
-                            label: sub.label,
-                            srclang: sub.srclang,
-                            default: false,
-                        }, false);
-                    }
-
-                });
-
-                let subtitlesEnabled = false;
-                let octopusInstance = null;
-
-                // 監聽字幕選擇事件
-
-                player.textTracks().addEventListener('change', () => {
-                    const activeTrack = Array.from(player.textTracks()).find(track => track.mode === 'showing');
-                    if (activeTrack) {
-                        const selectedSubtitle = subtitles.find(sub => sub.label === activeTrack.label);
-                        if (selectedSubtitle) {
-                            // 啟用 SubtitlesOctopus
-                            if (octopusInstance) {
-                                octopusInstance.dispose(); // 銷毀當前的實例
-                            }
-                            if (selectedSubtitle.subUrl.includes('.vtt') || selectedSubtitle.subUrl.includes('.srt')) {
-                                octopusInstance = null; // 如果是 VTT，則不使用 SubtitlesOctopus
-
-                            } else {
-                                // 使用 SubtitlesOctopus
-                                octopusInstance = null; // 先清除舊的實例
-                                const options = {
-                                    video: player.el().querySelector('video'),
-                                    subUrl: selectedSubtitle.subUrl,
-                                    fonts: ['/fonts/SourceHanSansTC-Medium.otf'],
-                                    debug: true,
-                                    workerUrl: '/libass-wasm/dist/js/subtitles-octopus-worker.js',
-                                };
-                                octopusInstance = new SubtitlesOctopus(options);
-                                subtitlesEnabled = true;
-                                console.log(`SubtitlesOctopus enabled for ${selectedSubtitle.label}`);
-                            }
-
-                        }
-                    } else {
-                        // 關閉 SubtitlesOctopus
-                        if (subtitlesEnabled && octopusInstance) {
-                            octopusInstance.dispose();
-                            octopusInstance = null;
-                            subtitlesEnabled = false;
-                            console.log('SubtitlesOctopus disabled');
-                        }
-                    }
-                });
-            });
-    </script>
-</body>
-
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>影音資料庫</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module" crossorigin src="/assets/index-5l8u26yW.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B6d5Q7yt.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>

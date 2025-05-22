@@ -1,30 +1,36 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function HomePage() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const navigate = useNavigate()
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get('/get_all')
       .then(res => {
-        setData(res.data)
-        setLoading(false)
+        setData(res.data);
+        setLoading(false);
       })
       .catch(err => {
-        console.error(err)
-        setError(err)
-        setLoading(false)
-      })
-  }, [])
+        console.error(err);
+        setError(err);
+        setLoading(false);
+      });
+  }, []);
+
+  const getNavigationPath = (item, type) => {
+    if (type === 'video') return `/video/video:${item.id}`;
+    if (type === 'video_series') return `/video/video:${item.from_video_id}-${item.id}`;
+    if (type === 'music') return `/music/music:${item.id}`;
+    if (type === 'music_series') return `/music/music:${item.from_music_id}-${item.id}`;
+    return '/';
+  };
 
   const renderMediaList = (items, type) => {
-    if (!items || items.length === 0) {
-      return <div style={{ color: '#666' }}>無{type === 'video' ? '影片' : '音樂'}資料</div>
-    }
+    if (!items || items.length === 0) return null;
 
     return (
       <div style={{
@@ -33,19 +39,15 @@ export default function HomePage() {
         gap: '20px',
       }}>
         {items.map(item => {
-          const hasImage =
-            (type === 'video' && item.poster && item.poster !== '-1') ||
-            (type === 'music' && item.cover)
-
           const imageUrl =
-            type === 'video'
-              ? `/thumbnails/${item.poster}`
-              : `/covers/${item.cover}`
+            item.poster ?? item.cover ?? '';
+
+          const hasImage = !!imageUrl;
 
           return (
             <div
-              key={item.id}
-              onClick={() => navigate(`/${type}/${item.id}`)}
+              key={`${type}-${item.id}`}
+              onClick={() => navigate(getNavigationPath(item, type))}
               style={{
                 border: '1px solid #ddd',
                 borderRadius: '12px',
@@ -74,7 +76,7 @@ export default function HomePage() {
                       objectFit: 'cover'
                     }}
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.style.display = 'none';
                     }}
                   />
                 ) : (
@@ -93,11 +95,11 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          )
+          );
         })}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div style={{ padding: '24px' }}>
@@ -106,15 +108,21 @@ export default function HomePage() {
       {loading && <div>載入中...</div>}
       {error && <div style={{ color: 'red' }}>發生錯誤：{error.message}</div>}
 
-      <div style={{ marginBottom: '32px' }}>
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>影片</h3>
-        {renderMediaList(data?.videos, 'video')}
-      </div>
+      {(data?.videos?.length > 0 || data?.video_series?.length > 0) && (
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>影片</h3>
+          {renderMediaList(data.videos, 'video')}
+          {renderMediaList(data.video_series, 'video_series')}
+        </div>
+      )}
 
-      <div>
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>音樂</h3>
-        {renderMediaList(data?.music, 'music')}
-      </div>
+      {(data?.music?.length > 0 || data?.music_series?.length > 0) && (
+        <div>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>音樂</h3>
+          {renderMediaList(data.music, 'music')}
+          {renderMediaList(data.music_series, 'music_series')}
+        </div>
+      )}
     </div>
-  )
+  );
 }
