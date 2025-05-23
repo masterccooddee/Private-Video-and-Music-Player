@@ -18,8 +18,7 @@ import expire_handle from './expirehandle.js';
 import { watchingFile } from './listenfilechange.js';
 // import multer from 'multer';
 import SRT2WVTT from './srt2vtt.js';
-
-//import cors from 'cors';
+import Search from './search.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -148,6 +147,17 @@ app.get('/video/:id', async (req, res) => {
             console.error('Error serving video:', err);
             res.status(500).send('Internal Server Error');
         });
+});
+
+app.get('/search', async (req, res) => {
+    const keyword = req.query.keyword;
+    if (keyword === undefined) {
+        res.status(400).send('缺少關鍵字');
+        return;
+    }
+    const output = await Search(db, keyword);
+    res.setHeader('Content-Type', 'application/json');
+    res.send(output);
 });
 
 // 處理所有前端頁面
