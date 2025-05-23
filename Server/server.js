@@ -150,14 +150,16 @@ app.get('/video/:id', async (req, res) => {
         });
 });
 
+// 處理所有前端頁面
+app.get(/^\/(tag|upload|profile|favorites|rank|login)(\/.*)?$/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// // 處理所有前端頁面
-// app.get(/^\/(tag|upload|profile|favorites|rank|login)(\/.*)?$/, (req, res) => {
-//     res.sendFile(path.join(__dirname, '../dist/index.html'));
-// });
+
 
 // 處理上傳音樂或影片的請求 
 // app.post('/api/upload', upload.fields([
