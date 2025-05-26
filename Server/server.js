@@ -19,6 +19,7 @@ import { watchingFile } from './listenfilechange.js';
 // import multer from 'multer';
 import SRT2WVTT from './srt2vtt.js';
 import Search from './search.js';
+import {WebSocketServer} from 'ws';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,6 +93,24 @@ process.on('SIGINT', async () => {
 
 watchingFile(db, redis);
 
+let clients = [];
+// WebSocket 伺服器
+const wss = new WebSocketServer({ port: 8080 });
+wss.on('connection', (ws) => {
+    console.log('New client connected ',ws._socket.remoteAddress);
+    clients.push(ws);
+
+    ws.on('message', (message) => {
+        console.log('Received message:', message);
+        // 處理客戶端發送的消息
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+        clients = clients.filter(client => client !== ws);
+    });
+});
+
 const app = express();
 app.use(morgan('dev'));
 // app.use(cors());
@@ -137,7 +156,7 @@ app.get('/music/:id', async (req, res) => {
 
 app.get('/video/:id', async (req, res) => {
     const id = req.params.id;
-    const video_promise = serve_video(id, db, redis);
+    const video_promise = serve_video(id, db, redis, clients);
     video_promise
         .then((output) => {
             res.setHeader('Content-Type', 'application/json');
@@ -168,7 +187,6 @@ app.get(/^\/(tag|upload|profile|favorites|rank|login)(\/.*)?$/, (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
 
 
 // 處理上傳音樂或影片的請求 
