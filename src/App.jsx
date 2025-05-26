@@ -8,7 +8,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import UploadPage from './pages/UploadPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
-import VideoPlayer from './components/VideoPlayer';
+import VideoPlayer from './components/VideoPlayer/VideoPlayer';
 
 import { useState, useEffect } from 'react';
 
@@ -39,7 +39,7 @@ export default function App() {
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/video/:id" element={<VideoPlayer />} />
+          <Route path="/video" element={<VideoPlayer />} />
         </Routes>
       </main>
     </div>

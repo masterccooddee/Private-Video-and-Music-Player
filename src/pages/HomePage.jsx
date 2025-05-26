@@ -21,14 +21,6 @@ export default function HomePage() {
       });
   }, []);
 
-  const getNavigationPath = (item, type) => {
-    if (type === 'video') return `/video/video:${item.id}`;
-    if (type === 'video_series') return `/video/video:${item.from_video_id}-${item.id}`;
-    if (type === 'music') return `/music/music:${item.id}`;
-    if (type === 'music_series') return `/music/music:${item.from_music_id}-${item.id}`;
-    return '/';
-  };
-
   const renderMediaList = (items, type) => {
     if (!items || items.length === 0) return null;
 
@@ -42,10 +34,16 @@ export default function HomePage() {
           const imageUrl = item.poster ?? item.cover ?? '';
           const hasImage = !!imageUrl;
 
+          const handleClick = () => {
+            console.log(`Navigating to ${type} with ID: ${item.id}`);
+            if (type === 'video') navigate('/video', { state: item });
+            if (type === 'music') navigate('/music', { state: item });
+          };
+
           return (
             <div
               key={`${type}-${item.id}`}
-              onClick={() => navigate(getNavigationPath(item, type), { state: item })}
+              onClick={handleClick}
               style={{
                 border: '1px solid #ddd',
                 borderRadius: '12px',
@@ -106,19 +104,17 @@ export default function HomePage() {
       {loading && <div>載入中...</div>}
       {error && <div style={{ color: 'red' }}>發生錯誤：{error.message}</div>}
 
-      {(data?.videos?.length > 0) && (
+      {data?.videos?.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>影片</h3>
           {renderMediaList(data.videos, 'video')}
-          {/* {renderMediaList(data.video_series, 'video_series')} */}
         </div>
       )}
 
-      {(data?.music?.length > 0) && (
+      {data?.music?.length > 0 && (
         <div>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>音樂</h3>
           {renderMediaList(data.music, 'music')}
-          {/* {renderMediaList(data.music_series, 'music_series')} */}
         </div>
       )}
     </div>
