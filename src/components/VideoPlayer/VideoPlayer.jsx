@@ -1,55 +1,60 @@
-import React, { useEffect, useRef, useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import VideoJS from './VideoJS';
 
-
 const VideoPlayer = () => {
+  const { state: videoData } = useLocation(); // 拿到首頁傳來的 item（應包含 id）
+  const navigate = useNavigate();
 
-  let videooptions = {
+  const defaultOptions = {
     controls: true,
     autoplay: false,
-    width:1280,
-    height:720,
+    width: 1280,
+    height: 720,
     preload: 'auto',
     sources: [
       {
-            src: '', // 這裡的 src 將在後面動態設置
-            type: 'application/dash+xml',
+        src: '', // 會在後面更新
+        type: 'application/dash+xml',
       },
     ],
   };
-  const [option, setOpt] = useState(videooptions);
-  const [isLoading, setIsLoading] = useState(true); // 用於追蹤是否正在加載
-  let havefetch = false;
-    
+
+  const [options, setOptions] = useState(defaultOptions);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    if (havefetch) return; // 確保只執行一次
-    havefetch = true;
-    fetch('/video/video:4-28')
-    .then(res => res.json())
-    .then(data => {
-      setOpt(opt =>(
-        {
+    if (!videoData?.id) {
+      console.warn('沒有影片 ID，返回首頁');
+      navigate('/');
+      return;
+    }
+
+    fetch(`/video/video:${videoData.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setOptions(opt => ({
           ...opt,
           sources: [
             {
-              src: data.video_url, // 設定視頻源
+              src: data.video_url,
               type: 'application/dash+xml',
             },
           ],
-              poster:  data.poster_url, // 設定海報圖
-        }
-      )); // 設定視頻源
-      console.log(data);
-      setIsLoading(false);
-    })
-  },[]);
-  
+          poster: data.poster_url,
+        }));
+        console.log('載入完成:', data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('失敗:', err);
+        navigate('/');
+      });
+  }, [videoData]);
 
-  // 切換視頻源
   const handleChangeVideo = (newSrc) => {
-    setOpt(() => ({
-      ...videooptions,
+    setOptions(() => ({
+      ...defaultOptions,
       sources: [
         {
           src: newSrc,
@@ -59,20 +64,34 @@ const VideoPlayer = () => {
     }));
   };
 
-    return (
-        <div>
-            {isLoading ? <p>Loading</p> : <VideoJS options={option} />}
-            <div style={{ marginTop: '100px', textAlign: 'center' }}>
-                <button onClick={() => handleChangeVideo('https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd', 'example.vtt')}>
-                    影片 1
-                </button>
-                <button onClick={() => handleChangeVideo('https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd', 'example.vtt')}>
-                    影片 2
-                </button>
-            </div>
-            
-        </div>
-    );
+  return (
+    <div style={{ padding: '24px' }}>
+      <h2>{videoData?.name || '影片播放器'}</h2>
+
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <VideoJS options={options} />
+      )}
+
+      <div style={{ marginTop: '100px', textAlign: 'center' }}>
+        <button
+          onClick={() =>
+            handleChangeVideo('https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd')
+          }
+        >
+          影片 1
+        </button>
+        <button
+          onClick={() =>
+            handleChangeVideo('https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd')
+          }
+        >
+          影片 2
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default VideoPlayer;
