@@ -1,10 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import VideoJS from './VideoJS';
 
 
 const VideoPlayer = () => {
-
+    const location = useLocation();
+    const videoData = location.state || {};
+    let videoID = '';
+    if (videoData.from_video_id === undefined) {
+        videoID = String(videoData.from_video_id) + '-' + String(videoData.id);
+        
+    }
+    else{
+        videoID = String(videoData.id)
+    }
+    console.log('videoID:', videoID);
   let videooptions = {
     controls: true,
     autoplay: false,
@@ -25,7 +36,7 @@ const VideoPlayer = () => {
   useEffect(() => {
     if (havefetch) return; // 確保只執行一次
     havefetch = true;
-    fetch('/video/video:4-28')
+    fetch(`/video/video:${videoID}`)
     .then(res => res.json())
     .then(data => {
       setOpt(opt =>(
