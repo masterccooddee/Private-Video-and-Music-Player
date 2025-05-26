@@ -14,9 +14,11 @@ export default function UpdateVideoConvertingPercent(videoPath, percent = 0, tim
         console.warn(`Video not found in queue: ${videoName}`);
     }
     
-    // Optionally, you can log the updated queue for debugging
-    // console.log('Updated Video Queue:', video_queue);
-
     return video_queue;
     
+}
+
+export function clearfinishedVideoQueue() {
+    video_queue = video_queue.filter(video => video.percent < 100);
+    return video_queue;
 }

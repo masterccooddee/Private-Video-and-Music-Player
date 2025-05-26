@@ -2,7 +2,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { loading } from './loading.js';
 import si from 'systeminformation';
 import path from 'node:path';
-import { video_queue } from './VideoConvertingQueue.js';
+import { video_queue, clearfinishedVideoQueue } from './VideoConvertingQueue.js';
 import updatevideoqueue from './VideoConvertingQueue.js';
 
 
@@ -59,6 +59,7 @@ export async function convertToDASH_single(inputFilePath, outputDir, clients) {
                 .output(outputDir)
                 .on('end', () => {
                     console.log('\nDASH conversion completed successfully!');
+                    clearfinishedVideoQueue();
                     resolve(outputDir)
                 })
                 .on('error', (err) => {
