@@ -4,7 +4,7 @@ import { convertToDASH_single } from './video_DASH_converter.js';
 
 let converting_set = new Set();
 let convert_promise = new Map();
-export async function serve_video(id, db, redis) {
+export async function serve_video(id, db, redis, clients) {
     const key = id;
     const cache = await redis.get(key);
 
@@ -57,7 +57,7 @@ export async function serve_video(id, db, redis) {
             const conversionPromise = (async () => {
                 try {
                     converting_set.add(key); // 標記為正在轉換
-                    await convertToDASH_single(video_path, output_dir);
+                    await convertToDASH_single(video_path, output_dir, clients);
                     let output = {
                         video_url: '/video_tmp/' + video_name + '/' + video_season + '/' + video_episode + '/output.mpd',
                         poster_url: video_poster,
@@ -95,7 +95,7 @@ export async function serve_video(id, db, redis) {
             const conversionPromise = (async () => {
                 try {
                     converting_set.add(key); // 標記為正在轉換
-                    await convertToDASH_single(video_path, output_dir, key);
+                    await convertToDASH_single(video_path, output_dir, clients);
                     let output = {
                         video_url: '/video_tmp/' + video_name + '/output.mpd',
                         poster_url: video_poster,

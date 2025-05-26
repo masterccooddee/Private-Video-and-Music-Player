@@ -1,10 +1,12 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { loading } from './loading.js';
 import si from 'systeminformation';
+import path from 'node:path';
+import { video_queue } from './VideoConvertingQueue.js';
+import updatevideoqueue from './VideoConvertingQueue.js';
 
 
-
-export async function convertToDASH_single(inputFilePath, outputDir) {
+export async function convertToDASH_single(inputFilePath, outputDir, clients) {
 
 
     let startTime = Date.now();
@@ -64,10 +66,23 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                     reject(err);
                 })
                 .on('progress', (progress) => {
+                    const filename = path.basename(inputFilePath);
+                    clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            let updateinfo = updatevideoqueue(filename, Math.ceil(progress.percent), Math.ceil((Date.now() - startTime) / 1000));
+                            client.send(JSON.stringify(updateinfo));
+                        }
+                    });
                     loading(Math.ceil(progress.percent), 100, startTime);
                 })
                 .on('start', () => {
                     console.log('Start to convert to DASH of', inputFilePath);
+                    let convertingInfo = {
+                        name: path.basename(inputFilePath),
+                        percent: 0,
+                        time: 0
+                    };
+                    video_queue.push(convertingInfo);
                 })
                 .run();
         });
