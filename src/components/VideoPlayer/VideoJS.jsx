@@ -1,6 +1,5 @@
 import React from "react";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
+
 
 export const VideoJS = (props) => {
     const videoRef = React.useRef(null);;
@@ -8,9 +7,10 @@ export const VideoJS = (props) => {
     const { options, onReady } = props;
 
     React.useEffect(() => {
+        console.log("something changed in VideoJS", options);
         if (!playerRef.current && options.sources[0].src) {
 
-            const player = (playerRef.current = videojs(videoRef.current, options, () => {
+            const player = (playerRef.current = window.videojs(videoRef.current, options, () => {
                 player.log("player is ready");
                 onReady && onReady(player);
             }));
@@ -22,12 +22,14 @@ export const VideoJS = (props) => {
         else {
             const player = playerRef.current;
             if (player) {
+                if (player.src() !== options.sources[0].src) {
+                    player.src(options.sources);
+                }
                 player.autoplay(options.autoplay);
-                player.src(options.sources);
                 player.poster(options.poster);
             }
         }
-    }, [options.sources]);
+    }, [options, onReady]);
 
     React.useEffect(() => {
         const player = playerRef.current;

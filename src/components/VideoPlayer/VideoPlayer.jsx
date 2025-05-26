@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import VideoJS from './VideoJS';
@@ -6,10 +6,10 @@ import VideoJS from './VideoJS';
 const VideoPlayer = () => {
     const location = useLocation();
     const videoData = location.state || {};
+    console.log('videoData:', videoData);
     let videoID = '';
-    if (videoData.from_video_id === undefined) {
+    if (videoData.from_video_id !== undefined) {
         videoID = String(videoData.from_video_id) + '-' + String(videoData.id);
-        
     }
     else{
         videoID = String(videoData.id)
@@ -31,10 +31,10 @@ const VideoPlayer = () => {
 
     const [options, setOptions] = useState(videooptions);
     const [isLoading, setIsLoading] = useState(true);
-    let havefetch = false; // 確保只執行一次
+    const havefetch = useRef(false);
   useEffect(() => {
-    if (havefetch) return; // 確保只執行一次
-    havefetch = true;
+      if (havefetch.current) return; // 確保只執行一次
+      havefetch.current = true;
     fetch(`/video/video:${videoID}`)
     .then(res => res.json())
     .then(data => {
