@@ -93,7 +93,7 @@ process.on('SIGINT', async () => {
 
 watchingFile(db, redis);
 
-let clients = [];
+export let clients = [];
 // WebSocket 伺服器
 const wss = new WebSocketServer({ port: 8080 });
 wss.on('connection', (ws) => {
@@ -158,7 +158,7 @@ app.get('/music/:id', async (req, res) => {
 
 app.get('/video/:id', async (req, res) => {
     const id = req.params.id;
-    const video_promise = serve_video(id, db, redis, clients);
+    const video_promise = serve_video(id, db, redis);
     video_promise
         .then((output) => {
             res.setHeader('Content-Type', 'application/json');
