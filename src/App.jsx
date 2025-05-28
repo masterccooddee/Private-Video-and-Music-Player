@@ -16,7 +16,10 @@ import { Toast } from "primereact/toast";
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 
 export default function App() {
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        return localStorage.getItem('theme') === 'dark';
+    });
+
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const successtoast = React.useRef(null);
@@ -27,6 +30,7 @@ export default function App() {
     useEffect(() => {
         document.body.classList.toggle('dark-mode', isDarkMode);
         document.body.classList.toggle('light-mode', !isDarkMode);
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
     useEffect(() => {
@@ -76,6 +80,7 @@ export default function App() {
         <div className="container">
             <Toast ref={successtoast} position="top-right" />
             <Toast ref={infotoast} position="top-center" />
+
             <Sidebar
                 isDarkMode={isDarkMode}
                 isCollapsed={isSidebarCollapsed}
@@ -90,6 +95,7 @@ export default function App() {
                 onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
                 onCloseSidebar={() => setIsSidebarOpen(false)}
             />
+
             <main
                 className="main-content"
                 style={{
