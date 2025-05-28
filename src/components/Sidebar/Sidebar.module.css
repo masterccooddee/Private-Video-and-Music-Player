@@ -1,14 +1,17 @@
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
   background-color: #edeff1;
-  transition: width 0.3s;
   overflow: hidden;
   white-space: nowrap;
+  transition: width 0.3s;
   box-sizing: border-box;
-
-  /* 固定寬度且不可縮小 */
-  min-width: 0;
   flex-shrink: 0;
+  z-index: 1000; /* 確保永遠在最上層 */
 }
+
 
 .expanded {
   width: 200px;

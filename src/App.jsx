@@ -87,9 +87,16 @@ export default function App() {
                     }
                 }}
                 onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
-                onCloseSidebar={() => setIsSidebarOpen(false)} // 用於小螢幕點導航後自動關閉
+                onCloseSidebar={() => setIsSidebarOpen(false)}
             />
-            <main className="main-content">
+            <main
+                className="main-content"
+                style={{
+                    marginLeft: isSidebarCollapsed ? 55 : 200,
+                    transition: 'margin-left 0.3s',
+                    padding: '1rem',
+                }}
+            >
                 <Topbar isDarkMode={isDarkMode} />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
