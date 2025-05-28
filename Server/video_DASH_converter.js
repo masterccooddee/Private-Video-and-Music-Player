@@ -50,6 +50,8 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
             ffmpeg(inputFilePath)
                 .videoCodec(videoCodec)
                 .audioCodec('aac')
+                .audioChannels(2)
+                .audioBitrate('128k')
                 .format('dash')
                 .outputOptions([
                     '-use_template 1',
