@@ -11,7 +11,33 @@ export default function HomePage() {
   useEffect(() => {
     axios.get('/get_all')
       .then(res => {
-        setData(res.data);
+        const raw = res.data;
+
+        // 分類影片與影片集
+        const videoList = raw.videos.filter(v => v.type === 'video');
+        const seriesList = raw.videos.filter(v => v.type === 'series');
+
+        // 將 series 分組，每個影片集只取一筆代表，並記住第一集 ID
+        const groupedSeries = Object.values(
+          raw.video_series.reduce((acc, ep) => {
+            if (!acc[ep.from_video_id]) {
+              const parent = seriesList.find(s => s.id === ep.from_video_id);
+              acc[ep.from_video_id] = {
+                id: parent.id,
+                name: parent.name,
+                poster: parent.poster,
+                firstEpisodeId: `${ep.from_video_id}-${ep.id}`
+              };
+            }
+            return acc;
+          }, {})
+        );
+
+        setData({
+          videos: videoList,
+          video_series: groupedSeries,
+          music: raw.music
+        });
         setLoading(false);
       })
       .catch(err => {
@@ -35,9 +61,19 @@ export default function HomePage() {
           const hasImage = !!imageUrl;
 
           const handleClick = () => {
-            console.log(`Navigating to ${type} with ID: ${item.id}`);
-            if (type === 'video') navigate('/video', { state: item });
-            if (type === 'music') navigate('/music', { state: item });
+            if (type === 'video') {
+              navigate('/video', { state: { id: item.id, name: item.name } });
+            } else if (type === 'video_series') {
+              navigate('/video', {
+                state: {
+                  id: item.firstEpisodeId,
+                  name: item.name,
+                  poster: item.poster,
+                },
+              });
+            } else if (type === 'music') {
+              navigate('/music', { state: item });
+            }
           };
 
           return (
@@ -108,6 +144,13 @@ export default function HomePage() {
         <div style={{ marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>影片</h3>
           {renderMediaList(data.videos, 'video')}
+        </div>
+      )}
+
+      {data?.video_series?.length > 0 && (
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>影片集</h3>
+          {renderMediaList(data.video_series, 'video_series')}
         </div>
       )}
 
