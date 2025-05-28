@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-
+import { TabView, TabPanel } from 'primereact/tabview';
 import VideoJS from './VideoJS';
 
 const VideoPlayer = () => {
@@ -86,30 +86,51 @@ const VideoPlayer = () => {
     
   };
 
-  return (
-    <div style={{ padding: '24px' }}>
-      <h2>{videoData?.name || '影片播放器'}</h2>
+  const episodesBySeason = {};
+    if (Array.isArray(videoData.episodes)) {
+        videoData.episodes.forEach(ep => {
+            if(ep.season === undefined || 'NONE') ep.season = 1; // 如果沒有季數，預設為第1季
+            const season = ep.season || 1;
+            if (!episodesBySeason[season]) episodesBySeason[season] = [];
+            episodesBySeason[season].push(ep);
+        });
+    }
 
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <VideoJS options={options}/>
-      )}
+    return (
+      <div style={{ padding: '24px' }}>
+          <h2>{videoData?.name || '影片播放器'}</h2>
+          {isLoading ? (
+              <p>Loading...</p>
+          ) : (
+              <VideoJS options={options}/>
+          )}
 
-      <div style={{ marginTop: '100px', textAlign: 'center' }}>
-        {Array.isArray(videoData.episodes) && videoData.episodes.map((ep, idx) => (
-          <button
-            key={ep.id}
-            onClick={() =>
-              handleChangeVideo(String(videoData.id) + '-' + String(ep.id))
-            }
-            style={{ margin: '0 8px' }}
-          >
-            影片 {idx + 1}
-          </button>
-        ))}
+          <TabView>
+              {Object.keys(episodesBySeason).sort().map(season => (
+                  <TabPanel header={`第 ${season} 季`} key={season}>
+                      <div style={{ textAlign: 'left', marginTop: 24, marginBottom: 24, gap: '12px', display: 'flex', flexWrap: 'wrap' }}>
+                          {episodesBySeason[season].map((ep, idx) => (
+                              <button
+                                  key={ep.id}
+                                  onClick={() =>
+                                      handleChangeVideo(String(videoData.id) + '-' + String(ep.id))
+                                  }
+                                  style={{
+                                    margin: '0 12px',
+                                    width: '80px',      // 固定寬度
+                                    height: '40px',      // 固定高度
+                                    display: 'inline-block',
+                                    fontSize: '16px'
+                                  }}
+                              >
+                                  {ep.name || String(idx + 1)}
+                              </button>
+                          ))}
+                      </div>
+                  </TabPanel>
+              ))}
+          </TabView>
       </div>
-    </div>
   );
 };
 
