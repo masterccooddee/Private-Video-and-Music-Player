@@ -72,7 +72,6 @@ export const VideoJS = (props) => {
                                     video: player.el().querySelector('video'),
                                     subUrl: selectedSubtitle.subUrl,
                                     fonts: ['/fonts/SourceHanSansTC-Medium.otf'],
-                                    debug: true,
                                     workerUrl: '/libass-wasm/dist/js/subtitles-octopus-worker.js',
                                 };
                                 octopusInstance = new SubtitlesOctopus(options);
