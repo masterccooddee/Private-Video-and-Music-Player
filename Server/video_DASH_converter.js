@@ -5,7 +5,7 @@ import path from 'node:path';
 import { video_queue, clearfinishedVideoQueue } from './VideoConvertingQueue.js';
 import updatevideoqueue from './VideoConvertingQueue.js';
 import { clients } from './server.js';
-
+import WebSocket from 'ws';
 
 export async function convertToDASH_single(inputFilePath, outputDir) {
 
