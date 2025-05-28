@@ -13,22 +13,25 @@ export default function HomePage() {
       .then(res => {
         const raw = res.data;
 
-        // 分類影片與影片集
         const videoList = raw.videos.filter(v => v.type === 'video');
         const seriesList = raw.videos.filter(v => v.type === 'series');
 
-        // 將 series 分組，每個影片集只取一筆代表，並記住第一集 ID
         const groupedSeries = Object.values(
           raw.video_series.reduce((acc, ep) => {
+            const parent = seriesList.find(s => s.id === ep.from_video_id);
+            if (!parent) return acc;
+
             if (!acc[ep.from_video_id]) {
-              const parent = seriesList.find(s => s.id === ep.from_video_id);
               acc[ep.from_video_id] = {
                 id: parent.id,
                 name: parent.name,
                 poster: parent.poster,
-                firstEpisodeId: `${ep.from_video_id}-${ep.id}`
+                firstEpisodeFile: `${ep.season}.mp4`, // 改為實際影片檔案名
+                episodes: [],
               };
             }
+            acc[ep.from_video_id].episodes.push(ep);
+            console.log("acc:", acc);
             return acc;
           }, {})
         );
@@ -66,9 +69,11 @@ export default function HomePage() {
             } else if (type === 'video_series') {
               navigate('/video', {
                 state: {
-                  id: item.firstEpisodeId,
+                  id: item.id,
                   name: item.name,
                   poster: item.poster,
+                  file: item.firstEpisodeFile,
+                  episodes: item.episodes
                 },
               });
             } else if (type === 'music') {
