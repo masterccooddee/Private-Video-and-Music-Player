@@ -78,7 +78,7 @@ const VideoPlayer = () => {
       {isLoading ? (
         <p>Loading...</p>
       ) : (
-        <VideoJS options={options} subtitles={subtitles}/>
+        <VideoJS options={options}/>
       )}
 
       <div style={{ marginTop: '100px', textAlign: 'center' }}>
