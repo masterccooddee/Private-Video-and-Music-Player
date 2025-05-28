@@ -8,8 +8,8 @@ const VideoPlayer = () => {
     const videoData = location.state || {};
     console.log('videoData:', videoData);
     let videoID = '';
-    if (videoData.from_video_id !== undefined) {
-        videoID = String(videoData.from_video_id) + '-' + String(videoData.id);
+    if (videoData.episodes !== undefined) {
+        videoID = String(videoData.id) + '-' + String(videoData.episodes[0].id); // 如果有集數，則使用集數ID
     }
     else{
         videoID = String(videoData.id)
@@ -51,6 +51,7 @@ const VideoPlayer = () => {
         }));
         console.log('載入完成:', data);
         setIsLoading(false);
+        
       })
       .catch(err => {
         console.error('失敗:', err);
@@ -77,7 +78,7 @@ const VideoPlayer = () => {
       {isLoading ? (
         <p>Loading...</p>
       ) : (
-        <VideoJS options={options} />
+        <VideoJS options={options} subtitles={subtitles}/>
       )}
 
       <div style={{ marginTop: '100px', textAlign: 'center' }}>

@@ -14,7 +14,7 @@ export const VideoJS = (props) => {
                 player.log("player is ready");
                 onReady && onReady(player);
             }));
-
+            
             player.on('error', () => {
                 console.error('Video.js encountered an error:', player.error());
             });
@@ -33,7 +33,6 @@ export const VideoJS = (props) => {
 
     React.useEffect(() => {
         const player = playerRef.current;
-
         return () => {
             if (player) {
                 player.dispose();
