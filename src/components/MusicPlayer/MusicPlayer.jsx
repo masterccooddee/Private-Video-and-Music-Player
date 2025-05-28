@@ -7,6 +7,7 @@ const MusicPlayer = () => {
     // const audioRef = useRef(new Audio());
     // new add
     const location = useLocation();
+    
     const musicData = location.state || {};
     console.log('musicData:', musicData);
     let Musicid = '';
