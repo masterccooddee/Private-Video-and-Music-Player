@@ -1,0 +1,328 @@
+body {
+  margin: 0;
+  background: #0a0a0a;
+  color: #e5e5e5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.track-button {
+  padding: 10px;
+  background: rgba(20, 20, 20, 0.8);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.track-button:hover {
+  background: rgba(225, 29, 72, 0.2);
+}
+
+.player-minimized {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(12px);
+  padding: 12px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+  animation: slide-up 0.4s ease-out;
+  cursor: pointer;
+}
+
+.player-minimized.active {
+  display: flex;
+}
+
+.player-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #1e1e1e, #0a0a0a);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: scale-up 0.5s ease-out;
+}
+
+.player-fullscreen.active {
+  display: flex;
+}
+
+.player-minimized .track-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 8px;
+}
+
+.player-minimized .img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 1px solid rgba(225, 29, 72, 0.3);
+}
+
+.player-fullscreen .img {
+  width: 250px;
+  height: 250px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  margin-bottom: 20px;
+  animation: fade-in 0.6s ease-out;
+  border: 2px solid rgba(225, 29, 72, 0.4);
+}
+
+.track-info-text {
+  flex: 1;
+}
+
+.track-info-text .name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.track-info-text .artist {
+  font-size: 0.85rem;
+  color: #b0b0b0;
+  margin: 2px 0 0;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0;
+  width: 100%;
+  max-width: 800px;
+}
+
+.button {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(10, 10, 10, 0.9));
+  border-radius: 50%;
+  color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(225, 29, 72, 0.6);
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.3), rgba(30, 30, 30, 0.9));
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.play-pause-button {
+  width: 54px;
+  height: 54px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+
+.play-pause-button:hover {
+  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.7);
+}
+
+.control-button {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(145deg, rgba(50, 50, 50, 0.9), rgba(20, 20, 20, 0.9));
+  border: 2px solid #e11d48;
+  border-radius: 50%;
+  color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.control-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(225, 29, 72, 0.6);
+  background: rgba(225, 29, 72, 0.3);
+}
+
+.progress-container {
+  width: 100%;
+  max-width: 800px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 5px;
+  background: #4b5563;
+  border-radius: 2.5px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.progress-bar:hover {
+  background: #6b7280;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #e11d48;
+  width: var(--progress, 0%);
+  border-radius: 2.5px;
+  transition: width 0.2s ease;
+}
+
+.progress-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #b0b0b0;
+  margin-top: 4px;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: static;
+  right: 12px;
+}
+
+.volume-bar {
+  width: 80px;
+  height: 5px;
+  background: #4b5563;
+  border-radius: 2.5px;
+  cursor: pointer;
+  position: relative;
+}
+
+.volume-bar:hover {
+  background: #6b7280;
+}
+
+.volume-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #e11d48;
+  width: var(--volume, 100%);
+  border-radius: 2.5px;
+  transition: width 0.2s ease;
+}
+
+.volume-label {
+  font-size: 0.75rem;
+  color: #b0b0b0;
+}
+
+.top-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.bottom-right-controls {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+}
+
+.error {
+  color: #ef4444;
+  text-align: center;
+  padding: 8px;
+  background: rgba(20, 20, 20, 0.9);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 10, 10, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e5e5;
+  border-top: 4px solid #e11d48;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scale-up {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

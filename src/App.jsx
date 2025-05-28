@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import VideoPlayer from './components/VideoPlayer/VideoPlayer';
 import VideoStatus from './components/VideoStatus/videostatus';
+import MusicPlayer from './components/MusicPlayer/MusicPlayer';
 import { Toast } from "primereact/toast";
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 
