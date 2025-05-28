@@ -3,14 +3,21 @@
   transition: width 0.3s;
   overflow: hidden;
   white-space: nowrap;
+  box-sizing: border-box;
+
+  /* 固定寬度且不可縮小 */
+  min-width: 0;
+  flex-shrink: 0;
 }
 
 .expanded {
   width: 200px;
+  flex-shrink: 0;
 }
 
 .collapsed {
-  width: 60px;
+  width: 55px;
+  flex-shrink: 0;
 }
 
 .sidebarHeader {

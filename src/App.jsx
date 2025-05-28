@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar';
 import Topbar from './components/Topbar/Topbar';
@@ -11,19 +11,16 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import VideoPlayer from './components/VideoPlayer/VideoPlayer';
 import VideoStatus from './components/VideoStatus/videostatus';
-
-import 'primereact/resources/themes/lara-light-blue/theme.css';
 import { Toast } from "primereact/toast";
-
-import { useState, useEffect } from 'react';
+import 'primereact/resources/themes/lara-light-blue/theme.css';
 
 export default function App() {
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-    const successtoast = React.useRef(null);
-    const infotoast = React.useRef(null);
-    const ws = React.useRef(null);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const successtoast = useRef(null);
+    const infotoast = useRef(null);
+    const ws = useRef(null);
     const [videoStatus, setVideoStatus] = useState([]);
 
     useEffect(() => {
@@ -40,8 +37,6 @@ export default function App() {
 
         ws.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            // console.log('Received data:', data);
-
             const completedItems = data.filter((item) => item.percent === 100);
             completedItems.forEach((item) => {
                 successtoast.current.show({
@@ -54,7 +49,6 @@ export default function App() {
 
             const filteredData = data.filter(item => item.percent < 100);
             setVideoStatus(filteredData);
-
         };
 
         ws.current.onclose = () => {
@@ -84,8 +78,16 @@ export default function App() {
             <Sidebar
                 isDarkMode={isDarkMode}
                 isCollapsed={isSidebarCollapsed}
-                onToggleSidebar={() => setIsSidebarCollapsed(p => !p)}
-                onToggleDarkMode={() => setIsDarkMode(p => !p)}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => {
+                    if (window.innerWidth <= 768) {
+                        setIsSidebarOpen(prev => !prev);
+                    } else {
+                        setIsSidebarCollapsed(prev => !prev);
+                    }
+                }}
+                onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+                onCloseSidebar={() => setIsSidebarOpen(false)} // 用於小螢幕點導航後自動關閉
             />
             <main className="main-content">
                 <Topbar isDarkMode={isDarkMode} />

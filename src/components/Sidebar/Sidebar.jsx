@@ -11,11 +11,17 @@ const navItems = [
   { icon: 'login.svg', text: '登入 / 註冊', to: '/login' }
 ];
 
-function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode }) {
+function Sidebar({ isDarkMode, isCollapsed, isSidebarOpen, onToggleSidebar, onToggleDarkMode, onCloseSidebar }) {
+  const handleLinkClick = () => {
+    if (window.innerWidth <= 768) {
+      onCloseSidebar();
+    }
+  };
+
   return (
     <aside
-      className={`${styles.sidebar} ${
-        isCollapsed ? styles.collapsed : styles.expanded
+      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : styles.expanded} ${
+        isSidebarOpen ? styles.open : ''
       } ${isDarkMode ? styles.darkMode : ''}`}
     >
       <div className={styles.sidebarHeader}>
@@ -27,17 +33,17 @@ function Sidebar({ isDarkMode, isCollapsed, onToggleSidebar, onToggleDarkMode })
       <ul className={styles.navList}>
         {navItems.map((item, i) => (
           <li key={i}>
-            <a href={item.to} className={styles.sidebarLink}>
+            <a href={item.to} className={styles.sidebarLink} onClick={handleLinkClick}>
               <img src={`/icons/${item.icon}`} className={styles.icon} />
               <span>{item.text}</span>
             </a>
           </li>
         ))}
-        <li className={styles.sidebarLink} onClick={onToggleDarkMode}>
-          <img
-            src={isDarkMode ? '/icons/sun.svg' : '/icons/moon.svg'}
-            className={styles.icon}
-          />
+        <li className={styles.sidebarLink} onClick={() => {
+          onToggleDarkMode();
+          handleLinkClick();
+        }}>
+          <img src={isDarkMode ? '/icons/sun.svg' : '/icons/moon.svg'} className={styles.icon} />
           <span>{isDarkMode ? '日間模式' : '夜間模式'}</span>
         </li>
       </ul>
