@@ -107,6 +107,7 @@ export default function App() {
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/video" element={<VideoPlayer />} />
+                    <Route path="/music" element={<MusicPlayer />} />
                 </Routes>
             </main>
         </div>
