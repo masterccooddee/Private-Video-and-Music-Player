@@ -14,7 +14,7 @@ const useMusicPlayer = (audioRef) => {
   const [dominantColor, setDominantColor] = useState('#1e1e1e');
 
 //   const trackIds = ['1-1', '1-2', '2', '3', '4', '5', '6'];
-
+  loadTrack(Musicid);
   // 格式化時間
   const formatTime = (seconds) => {
     const min = Math.floor(seconds / 60);
@@ -50,19 +50,19 @@ const useMusicPlayer = (audioRef) => {
   };
 
   // 載入歌曲
-  const loadTrack = async () => {
+  const loadTrack = async (Musicid) => {
     //
-    const location = useLocation();
-    const musicData = location.state || {};
-    console.log('musicData:', musicData);
-    let Musicid = '';
-    if (musicData.type !== "music") { // 處理series
-        Musicid = String(musicData.from_music_id) + '-' + String(musicData.id);
-    }
-    else{
-        Musicid = String(musicData.id)
-    }
-    console.log('musicID:', Musicid);
+    // const location = useLocation();
+    // const musicData = location.state || {};
+    // console.log('musicData:', musicData);
+    // let Musicid = '';
+    // if (musicData.type !== "music") { // 處理series
+    //     Musicid = String(musicData.from_music_id) + '-' + String(musicData.id);
+    // }
+    // else{
+    //     Musicid = String(musicData.id)
+    // }
+    // console.log('musicID:', Musicid);
     //
     if (isPlaying) {
       audioRef.current.pause();
@@ -370,7 +370,7 @@ const useMusicPlayer = (audioRef) => {
   const render = () => (
     <>
       {error && <div className="error">{error}</div>}
-      <TrackList />
+      {/* <TrackList /> */}
       <PlayerMinimized />
       <PlayerFullscreen />
       <LoadingOverlay />
