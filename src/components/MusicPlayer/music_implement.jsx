@@ -1,39 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import './index.css';
 
-const useMusicPlayer = (audioRef) => {
-    const [currentTrackId, setCurrentTrackId] = useState(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isFullScreen, setIsFullScreen] = useState(false);
-    const [volume, setVolume] = useState(1);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+const useMusicPlayer = (Musicid, trackList = []) => {
+    const audioRef = useRef(new Audio());
+    const containerRef = useRef(null);
+    const progressBarRef = useRef(null);
+    const volumeBarRef = useRef(null);
     const [track, setTrack] = useState(null);
-    const [dominantColor, setDominantColor] = useState('#1e1e1e');
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [fullscreen, setFullscreen] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [volume, setVolume] = useState(1);
+    const [error, setError] = useState(null);
+    const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+    const [backgroundColor, setBackgroundColor] = useState('#0a0a0a');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isClosed, setIsClosed] = useState(false);
+    const [isDraggingProgress, setIsDraggingProgress] = useState(false);
+    const [isDraggingVolume, setIsDraggingVolume] = useState(false);
 
-    //   const trackIds = ['1-1', '1-2', '2', '3', '4', '5', '6'];
-    console.log('audioRef:', audioRef);
-    useEffect(() => {
-        fetch(`/music/music:${audioRef}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Music data:', data);
-                    loadTrack(data.Musicid,data);
-                })
-        }, []);
-
-    // loadTrack(audioRef)a;
-    // 格式化時間
-    const formatTime = (seconds) => {
-        const min = Math.floor(seconds / 60);
-        const sec = Math.floor(seconds % 60);
-        return `${min}:${sec < 10 ? '0' : ''}${sec}`;
-    };
-
-    // 提取封面主色
-    const getDominantColor = (imgSrc, callback) => {
+    // 提取專輯封面主色調
+    const extractColor = (imgSrc) => {
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = imgSrc;
@@ -54,340 +41,232 @@ const useMusicPlayer = (audioRef) => {
             r = Math.floor(r / count);
             g = Math.floor(g / count);
             b = Math.floor(b / count);
-            callback(`rgb(${r}, ${g}, ${b})`);
+            setBackgroundColor(`rgb(${r}, ${g}, ${b})`);
         };
-        img.onerror = () => callback('#1e1e1e');
     };
 
-    // 載入歌曲
-    const loadTrack = (Musicid, data) => {
-        //
-        // const location = useLocation();
-        // const musicData = location.state || {};
-        // console.log('musicData:', musicData);
-        // let Musicid = '';
-        // if (musicData.type !== "music") { // 處理series
-        //     Musicid = String(musicData.from_music_id) + '-' + String(musicData.id);
-        // }
-        // else{
-        //     Musicid = String(musicData.id)
-        // }
-        // console.log('musicID:', Musicid);
-        //
-        console.log('Loading track with ID:', Musicid);
-        if (isPlaying) {
-            audioRef.current.pause();
-            setIsPlaying(false);
-        }
+    const loadTrack = (index) => {
         setIsLoading(true);
-        try {
-            console.log('Loading track:', Musicid);
-            
-            console.log('Track data:', data);
-            const trackData = {
-                Musicid,
-                name: data.name || `Song ${Musicid}`,
-                artist: data.artist || 'Unknown Artist',
-                music_url: data.music_url,
-                cover_url: data.cover_url || '/assets/default-cover.jpg',
-            };
-            setTrack(trackData);
-            setCurrentTrackId(Musicid);
-            audioRef.current.src = trackData.music_url;
-            audioRef.current.volume = volume;
-            getDominantColor(trackData.cover_url, setDominantColor);
-            audioRef.current.play();
-            setIsPlaying(true);
-            setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching audio URL:', err);
-            setError(`無法載入歌曲 ID ${Musicid}`);
-            setIsLoading(false);
-        }
+        const data = trackList[index] || {};
+        const trackData = {
+            Musicid,
+            name: data.name || `Song ${Musicid}`,
+            artist: data.artist || '未知歌手',
+            music_url: data.music_url,
+            cover_url: data.cover_url || '/assets/default-cover.jpg',
+        };
+        setTrack(trackData);
+        audioRef.current.src = trackData.music_url;
+        audioRef.current.load();
+        audioRef.current.volume = volume;
+        setProgress(0);
+        setIsPlaying(true);
+        audioRef.current.play().catch(err => setError('播放失敗。'));
+        extractColor(trackData.cover_url);
+        setCurrentTrackIndex(index);
+        setIsLoading(false);
     };
 
-    // 顯示錯誤
     useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => setError(''), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+        setIsLoading(true);
+        fetch(`/music/music:${Musicid}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`載入錯誤: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const trackData = {
+                    Musicid,
+                    name: data.name || `Song ${Musicid}`,
+                    artist: data.artist || '未知歌手',
+                    music_url: data.music_url,
+                    cover_url: data.cover_url || '/assets/default-cover.jpg',
+                };
+                setTrack(trackData);
+                audioRef.current.src = trackData.music_url;
+                audioRef.current.volume = volume;
+                extractColor(trackData.cover_url);
+                setIsPlaying(true);
+                audioRef.current.play().catch(err => setError('播放失敗。'));
+                setError(null);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error('載入失敗:', err.message);
+                setError('無法載入音樂。');
+                setIsLoading(false);
+            });
 
-    // 播放/暫停
-    const togglePlay = async () => {
-        if (isPlaying) {
+        return () => {
             audioRef.current.pause();
-        } else {
-            try {
-                await audioRef.current.play();
-            } catch (err) {
-                setError(`無法播放音檔: ${audioRef.current.src}`);
+            audioRef.current.src = '';
+        };
+    }, [Musicid]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const audio = audioRef.current;
+            if (audio && audio.duration && !isDraggingProgress) {
+                setProgress((audio.currentTime / audio.duration) * 100);
             }
+        }, 500);
+
+        return () => clearInterval(interval);
+    }, [isDraggingProgress]);
+
+    const togglePlay = () => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (isPlaying) {
+            audio.pause();
+        } else {
+            audio.play().catch(err => setError('播放失敗。'));
         }
         setIsPlaying(!isPlaying);
     };
 
-    // 上一首
-    const playPrevious = () => {
-        // const currentIndex = trackIds.indexOf(currentTrackId);
-        // const prevIndex = currentIndex > 0 ? currentIndex - 1 : trackIds.length - 1;
-        // loadTrack(trackIds[prevIndex]);
+    const handleNext = () => {
+        if (trackList.length > 0) {
+            const nextIndex = (currentTrackIndex + 1) % trackList.length;
+            loadTrack(nextIndex);
+        }
     };
 
-    // 下一首
-    const playNext = () => {
-        // const currentIndex = trackIds.indexOf(currentTrackId);
-        // const nextIndex = currentIndex < trackIds.length - 1 ? currentIndex + 1 : 0;
-        // loadTrack(trackIds[nextIndex]);
+    const handlePrevious = () => {
+        if (trackList.length > 0) {
+            const prevIndex = (currentTrackIndex - 1 + trackList.length) % trackList.length;
+            loadTrack(prevIndex);
+        }
     };
 
-    // 關閉播放器
-    const closePlayer = () => {
+    const handleProgressDrag = (e) => {
+        const progressBar = progressBarRef.current;
+        if (!progressBar) return;
+        const rect = progressBar.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        const newProgress = Math.max(0, Math.min(100, (clickX / width) * 100));
+        setProgress(newProgress);
+        const audio = audioRef.current;
+        if (audio && audio.duration) {
+            audio.currentTime = (newProgress / 100) * audio.duration;
+        }
+    };
+
+    const handleVolumeDrag = (e) => {
+        const volumeBar = volumeBarRef.current;
+        if (!volumeBar) return;
+        const rect = volumeBar.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        const newVolume = Math.max(0, Math.min(1, clickX / width));
+        audioRef.current.volume = newVolume;
+        setVolume(newVolume);
+    };
+
+    const handleMouseDownProgress = (e) => {
+        setIsDraggingProgress(true);
+        handleProgressDrag(e);
+    };
+
+    const handleMouseMoveProgress = (e) => {
+        if (isDraggingProgress) {
+            handleProgressDrag(e);
+        }
+    };
+
+    const handleMouseDownVolume = (e) => {
+        setIsDraggingVolume(true);
+        handleVolumeDrag(e);
+    };
+
+    const handleMouseMoveVolume = (e) => {
+        if (isDraggingVolume) {
+            handleVolumeDrag(e);
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsDraggingProgress(false);
+        setIsDraggingVolume(false);
+    };
+
+    const handleClose = () => {
         audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        setIsPlaying(false);
-        setCurrentTrackId(null);
-        setTrack(null);
-        setIsFullScreen(false);
+        audioRef.current.src = '';
+        setIsClosed(true);
     };
 
-    // 切換全螢幕
-    const toggleFullScreen = () => {
-        setIsFullScreen(!isFullScreen);
+    const toggleFullscreen = () => setFullscreen(!fullscreen);
+
+    const handleContainerClick = (e) => {
+        if (!e.target.closest('.controls-container') && !e.target.closest('.progress-bar') && !e.target.closest('.volume-control')) {
+            toggleFullscreen();
+        }
     };
 
-    // 更新進度
-    // useEffect(() => {
-    //     const audio = audioRef.current;
-    //     const updateProgress = () => {
-    //         setCurrentTime(audio.currentTime);
-    //         setDuration(audio.duration || 0);
-    //     };
-    //     audio.addEventListener('timeupdate', updateProgress);
-    //     audio.addEventListener('loadedmetadata', () => {
-    //         setDuration(audio.duration);
-    //     });
-    //     audio.addEventListener('error', () => {
-    //         setError(`音檔載入失敗: ${audio.src}`);
-    //         setIsLoading(false);
-    //     });
-    //     return () => {
-    //         audio.removeEventListener('timeupdate', updateProgress);
-    //         audio.removeEventListener('loadedmetadata', () => { });
-    //         audio.removeEventListener('error', () => { });
-    //     };
-    // }, []);
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    };
 
-    // 子組件：TrackList
-    //   const TrackList = () => (
-    //     <div className="track-list">
-    //       {trackIds.map((Musicid) => (
-    //         <div
-    //           key={Musicid}
-    //           className="track-button"
-    //           onClick={() => loadTrack(Musicid)}
-    //         >
-    //           Song {Musicid}
-    //         </div>
-    //       ))}
-    //     </div>
-    //   );
-
-    // 子組件：TrackInfo
-    const TrackInfo = ({ cover, name, artist, isMinimized, closePlayer }) => (
-        <div className="track-info">
-            <img
-                src={cover}
-                alt="專輯封面"
-                className="img"
-            />
-            <div className="track-info-text">
-                <p className="name" style={isMinimized ? {} : { fontSize: '1.8rem', margin: '10px 0' }}>{name}</p>
-                <p className="artist" style={isMinimized ? {} : { fontSize: '1.2rem', color: '#b0b0b0' }}>{artist}</p>
-            </div>
-            {isMinimized && (
-                <button className="control-button" onClick={closePlayer}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="2">
-                        <path d="M6 6l12 12M6 18L18 6" />
-                    </svg>
-                </button>
-            )}
-        </div>
-    );
-
-    // 子組件：Controls
-    const Controls = ({ isFullScreen }) => (
-        <div className="controls" style={isFullScreen ? { margin: '20px 0' } : {}}>
-            <button className="button" onClick={playPrevious}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="2.5">
-                    <path d="M11 5L3 12l8 7V5zM21 5v14" />
-                </svg>
-            </button>
-            <button
-                className="button play-pause-button"
-                onClick={togglePlay}
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="2.5">
-                    {isPlaying ? (
-                        <path d="M9 4h2v16H9V4zm6 0h2v16h-2V4z" />
-                    ) : (
-                        <path d="M5 3l14 9-14 9V3z" />
-                    )}
-                </svg>
-            </button>
-            <button className="button" onClick={playNext}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="2.5">
-                    <path d="M13 5l8 7-8 7V5zM3 5v14" />
-                </svg>
-            </button>
-            <div className="volume-control">
-                <span className="volume-label">{Math.round(volume * 100)}%</span>
-                <div
-                    className="volume-bar"
-                    style={{ '--volume': `${volume * 100}%` }}
-                    onMouseDown={(e) => {
-                        const bar = e.target;
-                        const rect = bar.getBoundingClientRect();
-                        const updateVolume = (e) => {
-                            const x = e.clientX - rect.left;
-                            const newVolume = Math.min(Math.max(x / rect.width, 0), 1);
-                            setVolume(newVolume);
-                            audioRef.current.volume = newVolume;
-                        };
-                        updateVolume(e);
-                        document.addEventListener('mousemove', updateVolume);
-                        document.addEventListener('mouseup', () => {
-                            document.removeEventListener('mousemove', updateVolume);
-                        }, { once: true });
-                    }}
-                />
-            </div>
-        </div>
-    );
-
-    // 子組件：ProgressBar
-    const ProgressBar = ({ isFullScreen }) => {
-        const handleProgressDrag = (e) => {
-            const bar = e.target;
-            const rect = bar.getBoundingClientRect();
-            const updateProgress = (e) => {
-                const x = e.clientX - rect.left;
-                const percent = Math.min(Math.max(x / rect.width, 0), 1);
-                audioRef.current.currentTime = percent * duration;
-            };
-            document.addEventListener('mousemove', updateProgress);
-            document.addEventListener('mouseup', () => {
-                document.removeEventListener('mousemove', updateProgress);
-            }, { once: true });
-        };
-
-        const progressPercent = (currentTime / duration) * 100 || 0;
+    const render = () => {
+        if (isClosed) return null;
+        if (error) return <div className="error">{error}</div>;
+        if (!track || isLoading) return <div className="loading-overlay active"><div className="spinner"></div></div>;
 
         return (
-            <div className="progress-container" style={isFullScreen ? { width: '80%', maxWidth: '600px' } : {}}>
-                <div
-                    className="progress-bar"
-                    style={{ '--progress': `${progressPercent}%` }}
-                    onMouseDown={handleProgressDrag}
-                />
-                <div className="progress-time">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
+            <div
+                className={`player-${fullscreen ? 'fullscreen' : 'minimized'} active`}
+                style={fullscreen ? { background: `linear-gradient(180deg, ${backgroundColor}, #0a0a0a)` } : {}}
+                onClick={handleContainerClick}
+                ref={containerRef}
+                onMouseMove={handleMouseMoveProgress}
+                onMouseUp={handleMouseUp}
+            >
+                <div className="track-info">
+                    <img className="img" src={track.cover_url} alt="專輯封面" />
+                    <div className="track-info-text">
+                        <div className="name">{track.name}</div>
+                        <div className="artist">{track.artist}</div>
+                    </div>
                 </div>
+                <div className="controls-container">
+                    <div className="progress-container">
+                        <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                        <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                        <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
+                    </div>
+                    <div className="controls">
+                        <div className="control-button" onClick={handlePrevious}>⏮</div>
+                        <div className="control-button play-pause-button" onClick={togglePlay}>
+                            {isPlaying ? (
+                                '⏸'
+                            ) : (
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                </svg>
+                            )}
+                        </div>
+                        <div className="control-button" onClick={handleNext}>⏭</div>
+                        <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
+                            <span className="volume-label">音量</span>
+                            <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
+                        </div>
+                        <div className="control-button" onClick={handleClose}>✖</div>
+                    </div>
+                </div>
+                {fullscreen && (
+                    <div className="top-controls">
+                        <div className="control-button" onClick={toggleFullscreen}>🗕</div>
+                    </div>
+                )}
             </div>
         );
     };
-
-    // 子組件：PlayerMinimized
-    const PlayerMinimized = () => (
-        <div
-            className={`player-minimized ${track ? 'active' : ''}`}
-            onClick={(e) => {
-                if (!e.target.closest('.button, .control-button, .progress-bar, .volume-bar, .volume-label, .play-pause-button')) {
-                    toggleFullScreen();
-                }
-            }}
-        >
-            {track && (
-                <>
-                    <TrackInfo cover={track.cover_url} name={track.name} artist={track.artist} isMinimized={true} closePlayer={closePlayer} />
-                    <Controls />
-                    <ProgressBar />
-                </>
-            )}
-        </div>
-    );
-
-    // 子組件：PlayerFullscreen
-    const PlayerFullscreen = () => (
-        <div
-            className={`player-fullscreen ${isFullScreen ? 'active' : ''}`}
-            style={{ background: `linear-gradient(180deg, ${dominantColor}, #0a0a0a)` }}
-        >
-            <div className="top-controls">
-                <div className="volume-control">
-                    <span className="volume-label">{Math.round(volume * 100)}%</span>
-                    <div
-                        className="volume-bar"
-                        style={{ '--volume': `${volume * 100}%` }}
-                        onMouseDown={(e) => {
-                            const bar = e.target;
-                            const rect = bar.getBoundingClientRect();
-                            const updateVolume = (e) => {
-                                const x = e.clientX - rect.left;
-                                const newVolume = Math.min(Math.max(x / rect.width, 0), 1);
-                                setVolume(newVolume);
-                                audioRef.current.volume = newVolume;
-                            };
-                            updateVolume(e);
-                            document.addEventListener('mousemove', updateVolume);
-                            document.addEventListener('mouseup', () => {
-                                document.removeEventListener('mousemove', updateVolume);
-                            }, { once: true });
-                        }}
-                    />
-                </div>
-                <button className="control-button" onClick={closePlayer}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="2">
-                        <path d="M6 6l12 12M6 18L18 6" />
-                    </svg>
-                </button>
-            </div>
-            <div className="bottom-right-controls">
-                <button className="control-button" onClick={toggleFullScreen}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="2">
-                        <path d="M7 14H4v5h5v-3H7v-2zm10 0h3v5h-5v-3h2v-2zm0-10h3v5h-5V6h2V4zM7 4H4v5h5V6H7V4z" />
-                    </svg>
-                </button>
-            </div>
-            {track && (
-                <>
-                    <TrackInfo cover={track.cover_url} name={track.name} artist={track.artist} isMinimized={false} />
-                    <Controls isFullScreen={true} />
-                    <ProgressBar isFullScreen={true} />
-                </>
-            )}
-        </div>
-    );
-
-    // 子組件：LoadingOverlay
-    const LoadingOverlay = () => (
-        <div className={`loading-overlay ${isLoading ? 'active' : ''}`}>
-            <div className="spinner" />
-        </div>
-    );
-
-    // 渲染函數
-    const render = () => (
-        <>
-            {/* {error && <div className="error">{error}</div>} */}
-            {/* <TrackList /> */}
-            <PlayerMinimized />
-            <PlayerFullscreen />
-            <LoadingOverlay />
-        </>
-    );
 
     return { render };
 };

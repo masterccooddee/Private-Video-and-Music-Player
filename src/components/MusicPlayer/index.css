@@ -35,18 +35,24 @@ body {
 
 .player-minimized {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
+  bottom: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: clamp(48px, 8vh, 120px);
   background: rgba(20, 20, 20, 0.95);
   backdrop-filter: blur(12px);
-  padding: 12px;
+  padding: 8px 16px;
   display: none;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
   animation: slide-up 0.4s ease-out;
   cursor: pointer;
+  z-index: 1000;
 }
 
 .player-minimized.active {
@@ -75,23 +81,169 @@ body {
 .player-minimized .track-info {
   display: flex;
   align-items: center;
-  width: 100%;
-  max-width: 800px;
-  margin-bottom: 8px;
+  height: 100%;
+  margin-right: 16px;
 }
 
 .player-minimized .img {
-  width: 50px;
-  height: 50px;
+  height: 100%;
+  aspect-ratio: 1;
   border-radius: 8px;
   object-fit: cover;
   margin-right: 12px;
   border: 1px solid rgba(225, 29, 72, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.player-minimized .img:hover {
+  transform: scale(1.05);
+}
+
+.player-minimized .controls-container {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  min-width: 0;
+  gap: 0;
+}
+
+.player-minimized .controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 0 auto;
+  flex: none;
+}
+
+.player-minimized .control-button, .player-minimized .play-pause-button,
+.player-fullscreen .control-button, .player-fullscreen .play-pause-button {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.player-minimized .control-button:hover, .player-minimized .play-pause-button:hover,
+.player-fullscreen .control-button:hover, .player-fullscreen .play-pause-button:hover {
+  transform: scale(1.12);
+  color: #fff;
+  background: transparent;
+}
+
+.player-minimized .play-pause-button {
+  background: #fff;
+  color: #e11d48;
+  border: 2.5px solid #e11d48;
+}
+
+.player-minimized .play-pause-button:hover {
+  background: #f43f5e;
+  color: #fff;
+  border: 2.5px solid #fff;
+}
+
+.player-minimized .progress-container {
+  flex: 1 1 0;
+  min-width: 150px;
+  max-width: 1000px;
+  margin: 0 12px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.player-minimized .progress-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1.5px;
+}
+
+.player-minimized .progress-bar:hover {
+  height: 4px;
+}
+
+.player-minimized .progress-bar::before {
+  background: linear-gradient(90deg, #e11d48, #f43f5e);
+}
+
+.player-minimized .volume-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 24px;
+  min-width: 80px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.player-minimized .volume-bar {
+  width: 60px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.player-minimized .volume-bar:hover {
+  height: 4px;
+}
+
+.player-minimized .volume-bar::before {
+  background: linear-gradient(90deg, #e11d48, #f43f5e);
+}
+
+.player-minimized .volume-label {
+  font-size: 0.8rem;
+  color: #b0b0b0;
+}
+
+.player-minimized .track-info-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 120px;
+  max-width: 180px;
+  margin-right: 16px;
+  overflow: hidden;
+}
+
+.player-minimized .name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-minimized .artist {
+  font-size: 0.85rem;
+  color: #b0b0b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-minimized .progress-time {
+  white-space: nowrap;
+  font-size: 0.95em;
+  min-width: 40px;
+  text-align: center;
 }
 
 .player-fullscreen .img {
-  width: 250px;
-  height: 250px;
+  width: 500px;
+  height: 500px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
   margin-bottom: 20px;
@@ -104,6 +256,7 @@ body {
 }
 
 .track-info-text .name {
+  color: #b0b0b0;
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
@@ -325,4 +478,79 @@ body {
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* 全螢幕模式歌名歌手置中 */
+.player-fullscreen .track-info-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 24px 0 0 0;
+}
+
+.player-fullscreen .name {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.player-fullscreen .artist {
+  font-size: 1.2rem;
+  color: #f43f5e;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.player-minimized .control-button {
+  flex-shrink: 0;
+}
+
+.player-minimized .control-button,
+.player-minimized .play-pause-button,
+.player-fullscreen .control-button,
+.player-fullscreen .play-pause-button {
+  color: #fff;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.player-minimized .play-pause-button svg,
+.player-fullscreen .play-pause-button svg {
+  fill: #fff !important;
+}
+
+.player-minimized .right-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+@media (max-width: 400px) {
+  .player-minimized .progress-time:last-child {
+    display: none;
+  }
+}
+
+.player-fullscreen .progress-container {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  width: 500px;
+  margin: 24px auto 0 auto;
+  gap: 0;
+}
+.player-fullscreen .progress-time {
+  text-align: center;
+  font-size: 1rem;
+}
+.player-fullscreen .progress-bar {
+  width: 100%;
+  margin: 0;
 }
