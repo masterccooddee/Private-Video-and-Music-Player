@@ -61,15 +61,29 @@ const VideoPlayer = () => {
   }, [videoID]);
 
   const handleChangeVideo = (newSrc) => {
-    setOptions(() => ({
+    setIsLoading(true); // 切換影片時先顯示載入狀態
+    console.log('切換影片到:', newSrc);
+    fetch(`/video/video:${newSrc}`)
+      .then(res => res.json())
+      .then(data => {
+        setOptions(() => ({
         ...videooptions,
-      sources: [
-        {
-          src: newSrc,
-          type: 'application/dash+xml',
-        },
-      ],
-    }));
+        sources: [
+          {
+            src: data.video_url, // 更新為新的影片URL
+            type: 'application/dash+xml',
+          },
+        ],
+        poster: data.poster_url, // 更新為新的海報URL
+        sub: data.subtitle_url // 更新為新的字幕URL
+      }));
+        console.log('切換影片:', data);
+        setIsLoading(false); // 切換影片時先顯示載入狀態
+      })
+      .catch(err => {
+        console.error('切換影片失敗:', err);
+      });
+    
   };
 
   return (
@@ -85,14 +99,14 @@ const VideoPlayer = () => {
       <div style={{ marginTop: '100px', textAlign: 'center' }}>
         <button
           onClick={() =>
-            handleChangeVideo('https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd')
+            handleChangeVideo(String(videoData.id) + '-' + String(videoData.episodes[0].id))
           }
         >
           影片 1
         </button>
         <button
           onClick={() =>
-            handleChangeVideo('https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd')
+            handleChangeVideo(String(videoData.id) + '-' + String(videoData.episodes[1].id))
           }
         >
           影片 2
