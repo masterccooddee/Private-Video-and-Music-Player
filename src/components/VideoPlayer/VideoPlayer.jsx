@@ -97,20 +97,17 @@ const VideoPlayer = () => {
       )}
 
       <div style={{ marginTop: '100px', textAlign: 'center' }}>
-        <button
-          onClick={() =>
-            handleChangeVideo(String(videoData.id) + '-' + String(videoData.episodes[0].id))
-          }
-        >
-          影片 1
-        </button>
-        <button
-          onClick={() =>
-            handleChangeVideo(String(videoData.id) + '-' + String(videoData.episodes[1].id))
-          }
-        >
-          影片 2
-        </button>
+        {Array.isArray(videoData.episodes) && videoData.episodes.map((ep, idx) => (
+          <button
+            key={ep.id}
+            onClick={() =>
+              handleChangeVideo(String(videoData.id) + '-' + String(ep.id))
+            }
+            style={{ margin: '0 8px' }}
+          >
+            影片 {idx + 1}
+          </button>
+        ))}
       </div>
     </div>
   );
