@@ -4,9 +4,10 @@ import si from 'systeminformation';
 import path from 'node:path';
 import { video_queue, clearfinishedVideoQueue } from './VideoConvertingQueue.js';
 import updatevideoqueue from './VideoConvertingQueue.js';
+import { clients } from './server.js';
 
 
-export async function convertToDASH_single(inputFilePath, outputDir, clients) {
+export async function convertToDASH_single(inputFilePath, outputDir) {
 
 
     let startTime = Date.now();
@@ -48,7 +49,7 @@ export async function convertToDASH_single(inputFilePath, outputDir, clients) {
 
             ffmpeg(inputFilePath)
                 .videoCodec(videoCodec)
-                .audioCodec('copy')
+                .audioCodec('aac')
                 .format('dash')
                 .outputOptions([
                     '-use_template 1',
@@ -59,7 +60,7 @@ export async function convertToDASH_single(inputFilePath, outputDir, clients) {
                 .output(outputDir)
                 .on('end', () => {
                     console.log('\nDASH conversion completed successfully!');
-                    clearfinishedVideoQueue();
+                    
                     resolve(outputDir)
                 })
                 .on('error', (err) => {
@@ -72,6 +73,7 @@ export async function convertToDASH_single(inputFilePath, outputDir, clients) {
                         if (client.readyState === WebSocket.OPEN) {
                             let updateinfo = updatevideoqueue(filename, Math.ceil(progress.percent), Math.ceil((Date.now() - startTime) / 1000));
                             client.send(JSON.stringify(updateinfo));
+                            clearfinishedVideoQueue();
                         }
                     });
                     loading(Math.ceil(progress.percent), 100, startTime);
@@ -81,7 +83,7 @@ export async function convertToDASH_single(inputFilePath, outputDir, clients) {
                     let convertingInfo = {
                         name: path.basename(inputFilePath),
                         percent: 0,
-                        time: 0
+                        time: 0,
                     };
                     video_queue.push(convertingInfo);
                 })
