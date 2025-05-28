@@ -18,9 +18,9 @@ export default function App() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const successtoast = useRef(null);
-    const infotoast = useRef(null);
-    const ws = useRef(null);
+    const successtoast = React.useRef(null);
+    const infotoast = React.useRef(null);
+    const ws = React.useRef(null);
     const [videoStatus, setVideoStatus] = useState([]);
 
     useEffect(() => {
