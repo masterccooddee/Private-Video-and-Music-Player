@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import '../styles/MediaCard.css'; // ✅ 引入你剛建立的 CSS
 
 export default function HomePage() {
   const [data, setData] = useState(null);
@@ -26,12 +27,11 @@ export default function HomePage() {
                 id: parent.id,
                 name: parent.name,
                 poster: parent.poster,
-                firstEpisodeFile: `${ep.season}.mp4`, // 改為實際影片檔案名
+                firstEpisodeFile: `${ep.season}.mp4`,
                 episodes: [],
               };
             }
             acc[ep.from_video_id].episodes.push(ep);
-            console.log("acc:", acc);
             return acc;
           }, {})
         );
@@ -82,19 +82,7 @@ export default function HomePage() {
           };
 
           return (
-            <div
-              key={`${type}-${item.id}`}
-              onClick={handleClick}
-              style={{
-                border: '1px solid #ddd',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                transition: 'box-shadow 0.2s',
-              }}
-              onMouseOver={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)')}
-              onMouseOut={(e) => (e.currentTarget.style.boxShadow = 'none')}
-            >
+            <div className="card" key={`${type}-${item.id}`} onClick={handleClick}>
               <div style={{
                 width: '100%',
                 aspectRatio: '16/9',
