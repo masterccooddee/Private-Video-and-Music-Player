@@ -48,6 +48,7 @@ const VideoPlayer = () => {
             },
           ],
           poster: data.poster_url,
+          sub: data.subtitle_url
         }));
         console.log('載入完成:', data);
         setIsLoading(false);
