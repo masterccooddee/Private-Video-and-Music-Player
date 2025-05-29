@@ -3,9 +3,9 @@ export default async function get_all_file(db) {
 
     let output = {};
     const videos = await db.all('SELECT id, name, type, total_episodes, poster FROM videos');
-    const music = await db.all('SELECT id, name, cover,type FROM music');
+    const music = await db.all('SELECT id, name, cover,type, info FROM music');
     const videos_series = await db.all('SELECT id, from_video_id, season, episode  FROM video_series');
-    const music_series = await db.all('SELECT id, from_music_id, name, cover FROM music_series');
+    const music_series = await db.all('SELECT id, from_music_id, name, cover, info FROM music_series');
     output['videos'] = videos;
     output['music'] = music;
     output['video_series'] = videos_series;
@@ -34,7 +34,7 @@ export async function get_from_type(db, type = '') {
                 output['videos'] = videos;
                 break;
             case 'music':
-                const music = await db.all('SELECT id, name, cover,type FROM music');
+                const music = await db.all('SELECT id, name, cover,type,info FROM music');
                 output['music'] = music;
                 break;
             case 'video_series':
@@ -42,7 +42,7 @@ export async function get_from_type(db, type = '') {
                 output['video_series'] = videos_series;
                 break;
             case 'music_series':
-                const music_series = await db.all('SELECT id, from_music_id, name, cover FROM music_series');
+                const music_series = await db.all('SELECT id, from_music_id, name, cover, info FROM music_series');
                 output['music_series'] = music_series;
                 break;
         }
