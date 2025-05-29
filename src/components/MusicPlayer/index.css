@@ -66,16 +66,19 @@ body {
   right: 0;
   bottom: 0;
   background: linear-gradient(180deg, #1e1e1e, #0a0a0a);
-  display: none;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   animation: scale-up 0.5s ease-out;
+  padding: clamp(30px, 6vh, 50px) clamp(20px, 4vw, 40px);
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-.player-fullscreen.active {
-  display: flex;
+.player-fullscreen:not(.active) {
+  display: none;
 }
 
 .player-minimized .track-info {
@@ -120,15 +123,15 @@ body {
 
 .player-minimized .control-button, .player-minimized .play-pause-button,
 .player-fullscreen .control-button, .player-fullscreen .play-pause-button {
-  width: 40px;
-  height: 40px;
+  width: clamp(30px, 6vw, 50px);
+  height: clamp(30px, 6vw, 50px);
   background: transparent;
   border: none;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 3vw, 2rem);
   transition: transform 0.18s cubic-bezier(.4,2,.6,1);
   position: relative;
   overflow: hidden;
@@ -137,7 +140,7 @@ body {
 
 .player-minimized .control-button:hover, .player-minimized .play-pause-button:hover,
 .player-fullscreen .control-button:hover, .player-fullscreen .play-pause-button:hover {
-  transform: scale(1.12);
+  transform: scale(1.05);
   color: #fff;
   background: transparent;
 }
@@ -146,12 +149,26 @@ body {
   background: #fff;
   color: #e11d48;
   border: 2.5px solid #e11d48;
+  width: clamp(40px, 8vw, 60px);
+  height: clamp(40px, 8vw, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .player-minimized .play-pause-button:hover {
   background: #f43f5e;
   color: #fff;
-  border: 2.5px solid #fff;
+  border: 2px solid #fff;
+}
+
+.player-minimized .play-pause-button svg,
+.player-fullscreen .play-pause-button svg {
+  fill: #e11d48;
+  width: 60%;
+  height: 60%;
+  display: block;
+  vertical-align: middle;
 }
 
 .player-minimized .progress-container {
@@ -242,13 +259,17 @@ body {
 }
 
 .player-fullscreen .img {
-  width: 500px;
-  height: 500px;
+  max-width: 90%;
+  max-height: clamp(150px, 40vh, 400px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  margin-bottom: 32px;
+  margin-bottom: clamp(20px, 4vh, 40px);
   animation: fade-in 0.6s ease-out;
-  border: 2px solid rgba(225, 29, 72, 0.4);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .track-info-text {
@@ -486,9 +507,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 24px 0 0 0;
-  min-height: 5.5rem;
-  max-height: 5.5rem;
+  margin: clamp(16px, 3vh, 24px) 0;
+  flex-shrink: 1;
+  min-height: 0;
 }
 
 .player-fullscreen .name {
@@ -496,7 +517,7 @@ body {
   font-weight: 700;
   color: #fff;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: clamp(4px, 1vh, 8px);
   letter-spacing: 1px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -507,7 +528,6 @@ body {
   max-width: 90vw;
   margin-left: auto;
   margin-right: auto;
-  max-height: 5.2rem;
   line-height: 1.2;
 }
 
@@ -580,12 +600,15 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 32px;
+  max-width: 900px;
+  margin-top: clamp(24px, 4vh, 32px);
+  flex-shrink: 0;
 }
 
 .player-fullscreen .progress-container {
-  width: 500px;
-  margin: 24px auto 0 auto;
+  width: 80%;
+  max-width: 800px;
+  margin: clamp(20px, 4vh, 30px) auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -612,7 +635,7 @@ body {
 
 @media (max-width: 600px) {
   .player-fullscreen .progress-container {
-    width: 95vw;
+    width: 95%;
     min-width: 0;
   }
   .player-fullscreen .fullscreen-controls-bottom {
@@ -632,6 +655,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
-  margin: 32px 0 0 0;
+  gap: clamp(16px, 4vw, 40px);
+  margin: clamp(20px, 4vh, 30px) 0 0 0;
+}
+
+.player-minimized .control-button.close-btn {
+  margin-left: 16px;
+  position: static;
+  transform: none;
 }

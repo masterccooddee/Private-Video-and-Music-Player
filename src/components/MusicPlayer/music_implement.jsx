@@ -171,7 +171,8 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         };
     }, [track && track.name, fullscreen]);
 
-    const togglePlay = () => {
+    const togglePlay = (e) => {
+        e.stopPropagation();
         const audio = audioRef.current;
         if (!audio) return;
         if (isPlaying) {
@@ -182,14 +183,16 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         setIsPlaying(!isPlaying);
     };
 
-    const handleNext = () => {
+    const handleNext = (e) => {
+        e.stopPropagation();
         if (trackList.length > 0) {
             const nextIndex = (currentTrackIndex + 1) % trackList.length;
             loadTrack(nextIndex);
         }
     };
 
-    const handlePrevious = () => {
+    const handlePrevious = (e) => {
+        e.stopPropagation();
         if (trackList.length > 0) {
             const prevIndex = (currentTrackIndex - 1 + trackList.length) % trackList.length;
             loadTrack(prevIndex);
