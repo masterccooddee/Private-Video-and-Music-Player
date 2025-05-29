@@ -62,7 +62,7 @@ export default function HomePage() {
         {items.map(item => {
           const imageUrl = item.poster ?? item.cover ?? '';
           const hasImage = !!imageUrl;
-
+          // console.log('Rendering item:', item);
           const handleClick = () => {
             if (type === 'video') {
               navigate('/video', { state: { id: item.id, name: item.name } });
