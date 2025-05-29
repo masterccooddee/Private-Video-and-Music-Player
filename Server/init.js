@@ -73,6 +73,7 @@ function initDB() {
             name TEXT,
             path TEXT,
             cover TEXT,
+            info TEXT,
             type TEXT
         );
 
@@ -82,6 +83,7 @@ function initDB() {
             name TEXT,
             path TEXT,
             cover TEXT,
+            info TEXT,
             FOREIGN KEY (from_music_id) REFERENCES music(id) ON DELETE CASCADE
         );
     `);
@@ -224,7 +226,7 @@ async function classifyMedia(db) {
             // 如果是檔案，則是單影片
             const filePath = path.join(videoFolder, folder);
             classifyVideo(db, filePath, path.basename(folder, path.extname(folder)));
-            findsubtitlesOneVideo(folders, db, path.basename(folder, path.extname(folder)), videoFolder,false);
+            findsubtitlesOneVideo(folders, db, path.basename(folder, path.extname(folder)), videoFolder, false);
         }
         finished_folder++;
         loading(finished_folder, folders.length, starttime);
@@ -259,15 +261,15 @@ async function classifyMedia(db) {
 
             const album_ID = db.prepare('SELECT id FROM music WHERE name = ?').get(albumname).id;
             // 將專輯中的每首歌曲插入資料庫
-            const insert_music = db.prepare('INSERT INTO music_series (from_music_id,name, path,cover) VALUES (@id,@name,@path,@cover)');
+            const insert_music = db.prepare('INSERT INTO music_series (from_music_id,name, path,cover,info) VALUES (@id,@name,@path,@cover,@info)');
             const musiclist = [];
             for (const file of albumFiles) {
                 const musicname = path.basename(file, path.extname(file));
                 const fileExt = path.extname(file).toLowerCase();
                 if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
                     const filePath = path.join(albumPath, file);
-                    const cover_path = await findCoverofMusic(filePath);
-                    musiclist.push({ path: filePath, name: musicname, cover: cover_path, id: album_ID });
+                    const info = await findCoverofMusic(filePath);
+                    musiclist.push({ path: filePath, name: musicname, cover: info.cover_path, id: album_ID, info: JSON.stringify(info) });
                 }
             }
             const insert_album = db.transaction((files) => {
@@ -284,8 +286,8 @@ async function classifyMedia(db) {
             if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
                 // console.log('Found music file:', musicFile);
                 //Find Cover
-                const cover_path = await findCoverofMusic(filePath);
-                alone_music_list.push({ path: filePath, name: musicname, cover: cover_path, type: 'music' });
+                const info = await findCoverofMusic(filePath);
+                alone_music_list.push({ path: filePath, name: musicname, cover: info.cover_path, type: 'music', info: JSON.stringify(info) });
             }
         }
         finished_folder++;
@@ -294,7 +296,7 @@ async function classifyMedia(db) {
     process.stdout.write('\x1b[?25h');
 
     // 將單曲插入資料庫
-    const insert_music = db.prepare('INSERT INTO music (name, path, cover, type) VALUES (@name,@path,@cover,@type)');
+    const insert_music = db.prepare('INSERT INTO music (name, path, cover, type, info) VALUES (@name,@path,@cover,@type, @info)');
     const insert_alone_music = db.transaction((files) => {
         for (const file of files) { insert_music.run(file); }
     });
@@ -418,7 +420,7 @@ async function classifyVideoSeries(db, seriesPath, folder, season) {
                 if (match) {
                     return match[0];
                 }
-                else{
+                else {
                     return '';
                 }
             });
@@ -494,6 +496,14 @@ async function getPosterFromTMDB(videoname, tmdb_key) {
 
 // findCoverofMusic
 async function findCoverofMusic(musicpath) {
+
+    let info = {
+        cover_path: null,
+        album: null,
+        artist: null,
+        title: null,
+        year: null
+    }
     try {
         const metadata = await parseFile(musicpath);
 
@@ -505,15 +515,20 @@ async function findCoverofMusic(musicpath) {
             await fs.writeFile(coverPath, cover.data); // 將封面儲存為檔案
             // console.log(cover.format);
             const outputPath = '/cover' + '/' + path.basename(musicpath, path.extname(musicpath)) + '.' + ext;
-            return outputPath; // 將封面儲存為檔案
-        } else {
-            // console.log('No cover found in:', musicpath);
-            return null;
+            info.cover_path = outputPath; // 封面路徑
         }
+
+        // 取得其他音樂資訊
+        info.album = metadata.common.album;
+        info.artist = metadata.common.artist;
+        info.title = metadata.common.title;
+        info.year = metadata.common.year;
     } catch (error) {
         console.error('Error extracting cover from music file:', error);
-        return null;
+
     }
+
+    return info;
 }
 
 async function findsubtitlesOneVideo(video_folder, db, name, filepath, have_Folder = false) {
@@ -524,23 +539,23 @@ async function findsubtitlesOneVideo(video_folder, db, name, filepath, have_Fold
 
     let video_sub = [];
 
-    if(!have_Folder) {
-    video_sub = subtitles.filter(sub => {
-        return sub.includes(name)
-    })
-    .map(sub => {
-            let full_path = path.join(filepath, sub).replace(/\\/g, '/');
-            const match = full_path.match(/\/Video\/.*/);
-            if (match) {
-                return match[0];
-            }
-            else {
-                return '';
-            }
-        });
+    if (!have_Folder) {
+        video_sub = subtitles.filter(sub => {
+            return sub.includes(name)
+        })
+            .map(sub => {
+                let full_path = path.join(filepath, sub).replace(/\\/g, '/');
+                const match = full_path.match(/\/Video\/.*/);
+                if (match) {
+                    return match[0];
+                }
+                else {
+                    return '';
+                }
+            });
     }
-    else{
-        video_sub = subtitles.map(sub =>{
+    else {
+        video_sub = subtitles.map(sub => {
             let full_path = path.join(filepath, sub).replace(/\\/g, '/');
             const match = full_path.match(/\/Video\/.*/);
             if (match) {
@@ -552,8 +567,8 @@ async function findsubtitlesOneVideo(video_folder, db, name, filepath, have_Fold
         });
     }
 
-    
-    
+
+
     let sub2db = JSON.stringify(video_sub);
     // console.log(sub2db);
     let update_sub = db.prepare('UPDATE videos SET subtitle = @subtitle WHERE name = @name');
@@ -562,6 +577,6 @@ async function findsubtitlesOneVideo(video_folder, db, name, filepath, have_Fold
 }
 
 
-// let file = await fs.readdir('C:/Users/arthu/Desktop/School/3/JS/Project/Video/ARIA The CREPUSCOLO');
-// let output = await findsubtitlesOneVideo(file);
-// console.log(JSON.parse(output)[0])
+// let file = 'C:\\Users\\arthu\\Desktop\\School\\3\\JS\\Project\\Music\\023. 時を刻む唄.mp3';
+// let metadata = await parseFile(file);
+// console.log(metadata);
