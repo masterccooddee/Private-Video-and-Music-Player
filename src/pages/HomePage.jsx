@@ -16,8 +16,12 @@ export default function HomePage() {
         // console.log('Received data:', raw);
         const videoList = raw.videos.filter(v => v.type === 'video');
         const videoSeriesList = raw.videos.filter(v => v.type === 'series');
+        const musicList = raw.music.filter(v => v.type === 'music');
+        const musicSeriesList = raw.music.filter(v => v.type === 'series');
+        // console.log('musicList:', musicList);
+        // console.log("musicSeriesList:", musicSeriesList);
 
-        const groupedSeries = Object.values(
+        const videoGroupedSeries = Object.values(
           raw.video_series.reduce((acc, ep) => {
             const parent = videoSeriesList.find(s => s.id === ep.from_video_id);
             if (!parent) return acc;
@@ -36,10 +40,30 @@ export default function HomePage() {
           }, {})
         );
 
+        const musicGroupedSeries = Object.values(
+          raw.music_series.reduce((acc, ep) => {
+            const parent = musicSeriesList.find(s => s.id === ep.from_music_id);
+            if (!parent) return acc;
+
+            if (!acc[ep.from_music_id]) {
+              acc[ep.from_music_id] = {
+                id: parent.id,
+                name: parent.name,
+                poster: parent.poster,
+                firstEpisodeFile: `${ep.season}.mp3`,
+                episodes: [],
+              };
+            }
+            acc[ep.from_music_id].episodes.push(ep);
+            return acc;
+          }, {})
+        ); 
+
         setData({
           videos: videoList,
-          video_series: groupedSeries,
-          music: raw.music
+          video_series: videoGroupedSeries,
+          music: musicList,
+          music_series: musicGroupedSeries
         });
         setLoading(false);
       })
@@ -86,7 +110,17 @@ export default function HomePage() {
               // });
 
             } else if (type === 'music') {
-              navigate('/music', { state: item });
+              navigate('/music', { state: { id: item.id, name: item.name } });
+            } else if (type === 'music_series') {
+              navigate('/music', {
+                state: {
+                  id: item.id,
+                  name: item.name,
+                  poster: item.poster,
+                  file: item.firstEpisodeFile,
+                  episodes: item.episodes
+                },
+              });
             }
           };
 
@@ -157,9 +191,16 @@ export default function HomePage() {
       )}
 
       {data?.music?.length > 0 && (
-        <div>
+        <div style={{ marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>音樂</h3>
           {renderMediaList(data.music, 'music')}
+        </div>
+      )}
+
+      {data?.music_series?.length > 0 && (
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>音樂集</h3>
+          {renderMediaList(data.music_series, 'music_series')}
         </div>
       )}
     </div>
