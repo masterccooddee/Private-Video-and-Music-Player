@@ -108,7 +108,7 @@ const VideoPlayer = () => {
 
           <TabView>
               {Object.keys(episodesBySeason).sort().map(season => (
-                  <TabPanel header={seasons} key={season}>
+                  <TabPanel header={season} key={season}>
                       <div style={{
                         textAlign: 'left',
                         marginTop: 24,
