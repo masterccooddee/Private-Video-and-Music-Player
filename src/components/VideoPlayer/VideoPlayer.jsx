@@ -90,7 +90,7 @@ const VideoPlayer = () => {
   const episodesBySeason = {};
     if (Array.isArray(videoData.episodes)) {
         videoData.episodes.forEach(ep => {
-            if(ep.season === undefined || ep.season === 'NONE') ep.season = 1; // 如果沒有季數，預設為第1季
+            if(ep.season === undefined || ep.season === 'NONE') ep.season = 'S1'; // 如果沒有季數，預設為第1季
             const season = ep.season;
             if (!episodesBySeason[season]) episodesBySeason[season] = [];
             episodesBySeason[season].push(ep);
