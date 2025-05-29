@@ -13,13 +13,13 @@ export default function HomePage() {
     axios.get('/get_all')
       .then(res => {
         const raw = res.data;
-
+        // console.log('Received data:', raw);
         const videoList = raw.videos.filter(v => v.type === 'video');
-        const seriesList = raw.videos.filter(v => v.type === 'series');
+        const videoSeriesList = raw.videos.filter(v => v.type === 'series');
 
         const groupedSeries = Object.values(
           raw.video_series.reduce((acc, ep) => {
-            const parent = seriesList.find(s => s.id === ep.from_video_id);
+            const parent = videoSeriesList.find(s => s.id === ep.from_video_id);
             if (!parent) return acc;
 
             if (!acc[ep.from_video_id]) {
