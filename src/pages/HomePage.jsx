@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../styles/MediaCard.css'; // ✅ 引入你剛建立的 CSS
+import '../styles/MediaCard.css';
 
 export default function HomePage() {
   const [data, setData] = useState(null);
@@ -76,6 +76,15 @@ export default function HomePage() {
                   episodes: item.episodes
                 },
               });
+
+              // console.log('Sending to video player:', {
+              //   id: item.id,
+              //   name: item.name,
+              //   poster: item.poster,
+              //   file: item.firstEpisodeFile,
+              //   episodes: item.episodes
+              // });
+
             } else if (type === 'music') {
               navigate('/music', { state: item });
             }
