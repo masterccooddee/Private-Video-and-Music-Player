@@ -55,7 +55,7 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         
         const trackData = {
             Musicid,
-            name: data.name || `Song ${Musicid}`,
+            name: musicData.name || `Song ${Musicid}`,
             artist: data.artist || '未知歌手',
             music_url: data.music_url,
             cover_url: data.cover_url || '/assets/default-cover.jpg',
