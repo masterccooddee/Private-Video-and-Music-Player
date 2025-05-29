@@ -156,7 +156,7 @@ body {
 
 .player-minimized .progress-container {
   flex: 1 1 0;
-  min-width: 150px;
+  min-width: 200px;
   max-width: 1000px;
   margin: 0 12px;
   display: flex;
@@ -369,7 +369,7 @@ body {
   justify-content: space-between;
   font-size: 0.75rem;
   color: #b0b0b0;
-  margin-top: 4px;
+  margin-top: 0px;
 }
 
 .volume-control {
@@ -538,19 +538,60 @@ body {
   }
 }
 
-.player-fullscreen .progress-container {
-  display: grid;
-  grid-template-columns: 48px 1fr 48px;
+.player-fullscreen .controls-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.player-fullscreen .progress-container {
   width: 500px;
   margin: 24px auto 0 auto;
-  gap: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.player-fullscreen .progress-time {
-  text-align: center;
-  font-size: 1rem;
+
+.player-fullscreen .fullscreen-controls-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 24px;
 }
-.player-fullscreen .progress-bar {
-  width: 100%;
+
+.player-fullscreen .volume-control {
   margin: 0;
+  justify-content: center;
+}
+
+.player-fullscreen .close-btn {
+  margin-left: 16px;
+  position: static;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .player-fullscreen .progress-container {
+    width: 95vw;
+    min-width: 0;
+  }
+  .player-fullscreen .fullscreen-controls-bottom {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .player-fullscreen .close-btn {
+    margin-left: 0;
+  }
+}
+
+.player-fullscreen .controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin: 32px 0 0 0;
 }

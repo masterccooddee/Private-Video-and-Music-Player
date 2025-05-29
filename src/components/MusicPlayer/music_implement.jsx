@@ -236,44 +236,56 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                 </div>
                 <div className="controls-container">
                     <div className="progress-container">
-                        {fullscreen ? (
-                            <>
-                                <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
-                                <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
-                                <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
-                            </>
-                        ) : (
-                            <>
-                                <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
-                                <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
-                            </>
-                        )}
+                        <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                        <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                        <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
                     </div>
-                    <div className="controls">
-                        <div className="control-button" onClick={handlePrevious}>⏮</div>
-                        <div className="control-button play-pause-button" onClick={togglePlay}>
-                            {isPlaying ? (
-                                '⏸'
-                            ) : (
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <polygon points="6,4 20,12 6,20" fill="#fff" />
-                                </svg>
-                            )}
-                        </div>
-                        <div className="control-button" onClick={handleNext}>⏭</div>
-                    </div>
-                    <div className="right-controls">
-                        <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
-                            <span className="volume-label">音量</span>
-                            <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
-                        </div>
-                        <div className="control-button" onClick={handleClose}>✖</div>
-                    </div>
+                    {!fullscreen && (
+                        <>
+                            <div className="controls">
+                                <div className="control-button" onClick={handlePrevious}>⏮</div>
+                                <div className="control-button play-pause-button" onClick={togglePlay}>
+                                    {isPlaying ? (
+                                        '⏸'
+                                    ) : (
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <div className="control-button" onClick={handleNext}>⏭</div>
+                            </div>
+                            <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
+                                <span className="volume-label">音量</span>
+                                <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
+                            </div>
+                            <div className="control-button close-btn" onClick={handleClose}>✖</div>
+                        </>
+                    )}
                 </div>
                 {fullscreen && (
-                    <div className="top-controls">
-                        <div className="control-button" onClick={toggleFullscreen}>🗕</div>
-                    </div>
+                    <>
+                        <div className="controls fullscreen-controls">
+                            <div className="control-button" onClick={handlePrevious}>⏮</div>
+                            <div className="control-button play-pause-button" onClick={togglePlay}>
+                                {isPlaying ? (
+                                    '⏸'
+                                ) : (
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                    </svg>
+                                )}
+                            </div>
+                            <div className="control-button" onClick={handleNext}>⏭</div>
+                        </div>
+                        <div className="fullscreen-controls-bottom">
+                            <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
+                                <span className="volume-label">音量</span>
+                                <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
+                            </div>
+                            <div className="control-button close-btn" onClick={handleClose}>✖</div>
+                        </div>
+                    </>
                 )}
             </div>
         );
