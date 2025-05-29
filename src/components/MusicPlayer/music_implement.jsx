@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './index.css';
+import default_Cover_Path from './ka3.jpg';
 
-const useMusicPlayer = (Musicid, trackList = []) => {
+const useMusicPlayer = (Musicid,musicData, trackList = []) => {
     const audioRef = useRef(new Audio());
     const containerRef = useRef(null);
     const progressBarRef = useRef(null);
@@ -18,6 +19,9 @@ const useMusicPlayer = (Musicid, trackList = []) => {
     const [isClosed, setIsClosed] = useState(false);
     const [isDraggingProgress, setIsDraggingProgress] = useState(false);
     const [isDraggingVolume, setIsDraggingVolume] = useState(false);
+    const [marqueeOffset, setMarqueeOffset] = useState(0);
+    const [marqueeReset, setMarqueeReset] = useState(false);
+    const marqueeRef = useRef(null);
 
     // 提取專輯封面主色調
     const extractColor = (imgSrc) => {
@@ -48,6 +52,7 @@ const useMusicPlayer = (Musicid, trackList = []) => {
     const loadTrack = (index) => {
         setIsLoading(true);
         const data = trackList[index] || {};
+        
         const trackData = {
             Musicid,
             name: data.name || `Song ${Musicid}`,
@@ -55,6 +60,7 @@ const useMusicPlayer = (Musicid, trackList = []) => {
             music_url: data.music_url,
             cover_url: data.cover_url || '/assets/default-cover.jpg',
         };
+        console.log('htherherherh:');
         setTrack(trackData);
         audioRef.current.src = trackData.music_url;
         audioRef.current.load();
@@ -77,12 +83,15 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                 return response.json();
             })
             .then(data => {
+                console.log(window.location.pathname);
+                console.log(default_Cover_Path);
+                console.log("HADADIAJDIAJDIJ: ",data);
                 const trackData = {
                     Musicid,
-                    name: data.name || `Song ${Musicid}`,
+                    name: musicData.name || `Song ${Musicid}`,
                     artist: data.artist || '未知歌手',
                     music_url: data.music_url,
-                    cover_url: data.cover_url || '/assets/default-cover.jpg',
+                    cover_url: data.cover_url || default_Cover_Path,
                 };
                 setTrack(trackData);
                 audioRef.current.src = trackData.music_url;
@@ -115,6 +124,52 @@ const useMusicPlayer = (Musicid, trackList = []) => {
 
         return () => clearInterval(interval);
     }, [isDraggingProgress]);
+
+    useEffect(() => {
+        if (!track || track.name.length <= 27) return;
+        let animationFrame;
+        let startTimeout;
+        let endTimeout;
+        let offset = 0;
+        let step = 1; // px per frame
+        let delayStart = 1000; // 1秒後開始
+        let delayEnd = 2000;   // 結尾停2秒
+
+        const scroll = () => {
+            if (!marqueeRef.current) return;
+            const containerWidth = marqueeRef.current.parentElement.offsetWidth;
+            const textWidth = marqueeRef.current.scrollWidth;
+            if (offset > textWidth - containerWidth) {
+                // 到尾巴，停2秒再重來
+                endTimeout = setTimeout(() => {
+                    offset = 0;
+                    setMarqueeOffset(0);
+                    setMarqueeReset(true);
+                    startTimeout = setTimeout(() => {
+                        setMarqueeReset(false);
+                        animationFrame = requestAnimationFrame(scroll);
+                    }, delayStart);
+                }, delayEnd);
+                return;
+            }
+            offset += step;
+            setMarqueeOffset(-offset);
+            animationFrame = requestAnimationFrame(scroll);
+        };
+
+        setMarqueeOffset(0);
+        setMarqueeReset(false);
+
+        startTimeout = setTimeout(() => {
+            animationFrame = requestAnimationFrame(scroll);
+        }, delayStart);
+
+        return () => {
+            cancelAnimationFrame(animationFrame);
+            clearTimeout(startTimeout);
+            clearTimeout(endTimeout);
+        };
+    }, [track && track.name, fullscreen]);
 
     const togglePlay = () => {
         const audio = audioRef.current;
@@ -218,6 +273,31 @@ const useMusicPlayer = (Musicid, trackList = []) => {
         if (error) return <div className="error">{error}</div>;
         if (!track || isLoading) return <div className="loading-overlay active"><div className="spinner"></div></div>;
 
+        // 處理歌名顯示方式
+        let nameNode;
+        if (track.name.length > 27) {
+            nameNode = (
+                <div
+                    className={`name marquee${fullscreen ? ' fullscreen' : ' minimized'}`}
+                    style={{ position: 'relative', overflow: 'hidden' }}
+                >
+                    <span
+                        ref={marqueeRef}
+                        style={{
+                            display: 'inline-block',
+                            whiteSpace: 'nowrap',
+                            transform: `translateX(${marqueeOffset}px)`,
+                            transition: marqueeReset ? 'none' : 'transform 0.03s linear'
+                        }}
+                    >
+                        {track.name}
+                    </span>
+                </div>
+            );
+        } else {
+            nameNode = <div className="name">{track.name}</div>;
+        }
+
         return (
             <div
                 className={`player-${fullscreen ? 'fullscreen' : 'minimized'} active`}
@@ -230,16 +310,16 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                 <div className="track-info">
                     <img className="img" src={track.cover_url} alt="專輯封面" />
                     <div className="track-info-text">
-                        <div className="name">{track.name}</div>
+                        {nameNode}
                         <div className="artist">{track.artist}</div>
                     </div>
                 </div>
                 <div className="controls-container">
-                    <div className="progress-container">
+                    {/* <div className="progress-container">
                         <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
                         <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
                         <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
-                    </div>
+                    </div> */}
                     {!fullscreen && (
                         <>
                             <div className="controls">
@@ -255,6 +335,13 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                                 </div>
                                 <div className="control-button" onClick={handleNext}>⏭</div>
                             </div>
+
+                            <div className="progress-container">
+                                <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                                <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                                <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
+                            </div>
+
                             <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
                                 <span className="volume-label">音量</span>
                                 <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
@@ -265,6 +352,11 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                 </div>
                 {fullscreen && (
                     <>
+                        <div className="progress-container">
+                            <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                            <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                            <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
+                        </div>
                         <div className="controls fullscreen-controls">
                             <div className="control-button" onClick={handlePrevious}>⏮</div>
                             <div className="control-button play-pause-button" onClick={togglePlay}>

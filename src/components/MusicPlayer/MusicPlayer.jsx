@@ -16,7 +16,7 @@ const MusicPlayer = () => {
     }
 
     console.log('musicID:', Musicid);
-    const { render } = useMusicPlayer(Musicid);
+    const { render } = useMusicPlayer(Musicid,musicData);
 
     return (
         <div className="container">
