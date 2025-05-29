@@ -108,7 +108,7 @@ const VideoPlayer = () => {
 
           <TabView>
               {Object.keys(episodesBySeason).sort().map(season => (
-                  <TabPanel header={`第 ${season} 季`} key={season}>
+                  <TabPanel header={seasons} key={season}>
                       <div style={{
                         textAlign: 'left',
                         marginTop: 24,
