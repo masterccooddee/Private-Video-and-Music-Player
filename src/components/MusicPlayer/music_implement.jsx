@@ -236,9 +236,18 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                 </div>
                 <div className="controls-container">
                     <div className="progress-container">
-                        <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
-                        <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
-                        <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
+                        {fullscreen ? (
+                            <>
+                                <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                                <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                                <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                                <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                            </>
+                        )}
                     </div>
                     <div className="controls">
                         <div className="control-button" onClick={handlePrevious}>⏮</div>
@@ -252,6 +261,8 @@ const useMusicPlayer = (Musicid, trackList = []) => {
                             )}
                         </div>
                         <div className="control-button" onClick={handleNext}>⏭</div>
+                    </div>
+                    <div className="right-controls">
                         <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
                             <span className="volume-label">音量</span>
                             <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
