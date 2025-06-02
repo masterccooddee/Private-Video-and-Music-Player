@@ -13,6 +13,10 @@
     color: #3d333376;
 }
 
+body.dark-mode .notConverting {
+    color: #ffffff;
+}
+
 .videoStatus {
     position: relative;
     display: flex;
@@ -26,6 +30,12 @@
     color: #3d3333;
 }
 
+body.dark-mode .videoStatus {
+    color: #ffffff;
+    border-bottom: solid 2px #2b8da6;
+    box-shadow: 0 0 20px rgba(56, 156, 181, 0.377);
+}
+
 .videostatuscontainer{
     display: flex;
     flex-direction: column;
@@ -34,9 +44,8 @@
 
 .p-progressbar {
     width: 65%;
-    
+    margin-top: 1.5%;
 }
-
 
 
 .barwithtime {
@@ -71,4 +80,8 @@
     font-size: medium;
     font-family: "Quantico", sans-serif;
     font-size: 17px;
+}
+
+body.dark-mode .insideword {
+    color: #ffffff;
 }
