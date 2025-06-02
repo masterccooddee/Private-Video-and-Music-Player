@@ -20,6 +20,7 @@ import { watchingFile } from './listenfilechange.js';
 import SRT2WVTT from './srt2vtt.js';
 import Search from './search.js';
 import {WebSocketServer} from 'ws';
+import randomMusicList from './random_music_list.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -179,6 +180,12 @@ app.get('/search', async (req, res) => {
     const output = await Search(db, keyword);
     res.setHeader('Content-Type', 'application/json');
     res.send(output);
+});
+
+app.get('/random_music', async (req, res) => {
+    const randomList = await randomMusicList(db);
+    res.setHeader('Content-Type', 'application/json');
+    res.send(randomList);
 });
 
 // 處理所有前端頁面

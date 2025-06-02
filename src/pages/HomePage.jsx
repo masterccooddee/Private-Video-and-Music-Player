@@ -110,7 +110,7 @@ export default function HomePage() {
                             // });
 
                         } else if (type === 'music') {
-                            navigate('/music', { state: { id: item.id, name: item.name, type: item.type } });
+                            navigate('/music', { state: { id: item.id, name: item.name, type: item.type, info: item.info } });
                         } else if (type === 'music_series') {
                             navigate('/music', {
                                 state: {

@@ -1,23 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import useMusicPlayer from './music_implement.jsx';
 import './index.css';
 
 const MusicPlayer = () => {
     const location = useLocation();
-    const musicData = location.state || {};
-    console.log('musicData:', musicData);
+    const [musicData, setMusicData] = React.useState(location.state || {});
+    const [Musicid, setMusicid] = React.useState('');
 
-    let Musicid = '';
-    if (musicData.type !== "music") {
-        Musicid = `${musicData.from_music_id}-${musicData.id}`;
-    } else {
-        Musicid = `${musicData.id}`;
-    }
+    useEffect(() => {
+        const musicData = location.state || {};
+        console.log('musicData:', musicData);
 
-    console.log('musicID:', Musicid);
-    const { render } = useMusicPlayer(Musicid,musicData);
-
+        let Musicid = '';
+        if (musicData.type !== "music") {
+            Musicid = `${musicData.from_music_id}-${musicData.id}`;
+        } else {
+            Musicid = `${musicData.id}`;
+        }
+        setMusicData(musicData);
+        setMusicid(Musicid);
+        console.log('musicID:', Musicid);
+        
+    }, [location]);
+    
+    const { render } = useMusicPlayer(Musicid, musicData);
     return (
         <div className="container">
             {render()}

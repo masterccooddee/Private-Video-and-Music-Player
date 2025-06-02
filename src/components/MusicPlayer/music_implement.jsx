@@ -74,6 +74,10 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
     };
 
     useEffect(() => {
+        if (!Musicid) {
+            console.log('還沒有musicid');
+            return;
+        }
         setIsLoading(true);
         fetch(`/music/music:${Musicid}`)
             .then(response => {
