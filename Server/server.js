@@ -189,7 +189,7 @@ app.get('/random_music', async (req, res) => {
 });
 
 // 處理所有前端頁面
-app.get(/^\/(tag|upload|profile|favorites|rank|login)(\/.*)?$/, (req, res) => {
+app.get(/^\/(tag|upload|profile|favorites|convert|login)(\/.*)?$/, (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 

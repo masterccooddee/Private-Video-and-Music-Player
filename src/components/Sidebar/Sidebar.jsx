@@ -3,7 +3,7 @@ import styles from './Sidebar.module.css';
 
 const navItems = [
   { icon: 'home.svg', text: '首頁', to: '/' },
-  { icon: 'rank.svg', text: '排行榜', to: '/rank' },
+  { icon: 'convert.svg', text: '轉換進度', to: '/convert' },
   { icon: 'tag.svg', text: '標籤', to: '/tag' },
   { icon: 'thumb_up.svg', text: '我的收藏', to: '/favorites' },
   { icon: 'upload.svg', text: '上傳資源', to: '/upload' },

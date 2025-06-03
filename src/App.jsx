@@ -118,7 +118,7 @@ export default function App() {
         >
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/rank" element={<VideoStatus videoStatus={videoStatus} />} />
+            <Route path="/convert" element={<VideoStatus videoStatus={videoStatus} />} />
             <Route path="/tag" element={<TagPage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/upload" element={<UploadPage />} />
