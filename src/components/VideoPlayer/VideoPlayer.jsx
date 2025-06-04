@@ -21,9 +21,8 @@ const VideoPlayer = () => {
   let videooptions = {
     controls: true,
     autoplay: false,
-    width: 1280,
-    height: 720,
     preload: 'auto',
+    fluid: true,
     sources: [
       {
         src: '', // 會在後面更新
@@ -98,7 +97,7 @@ const VideoPlayer = () => {
     }
 
     return (
-      <div style={{ padding: '24px', textAlign:'left' }}>
+      <div style={{ padding: '24px', textAlign:'left', position: 'relative', width: '100%' }}>
           <h2>{videoData?.name || '影片播放器'}</h2>
           {isLoading ? (
               <p>Loading...</p>
