@@ -44,7 +44,7 @@ function changeTimeFormat(seconds) {
 function caulcSpeed(elapsedTime, percent) {
     if (percent === 0) return {
         speed: '0.00 Percent/s',
-        est: 'EST:\n--:--:--'
+        est: 'EST: 00:00:00'
     };
     const speed = percent / elapsedTime;
     const esttime = (100 - percent) / speed;
