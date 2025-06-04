@@ -42,7 +42,10 @@ function changeTimeFormat(seconds) {
 }
 
 function caulcSpeed(elapsedTime, percent) {
-    if (percent === 0) return '0 KB/s';
+    if (percent === 0) return {
+        speed: '0.00 Percent/s',
+        est: 'EST:\n--:--:--'
+    };
     const speed = percent / elapsedTime;
     const esttime = (100 - percent) / speed;
     const speed_str = `${(speed).toFixed(2)} Percent/s`;

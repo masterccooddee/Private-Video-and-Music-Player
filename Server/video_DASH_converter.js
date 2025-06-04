@@ -2,12 +2,16 @@ import ffmpeg from 'fluent-ffmpeg';
 import { loading } from './loading.js';
 import si from 'systeminformation';
 import path from 'node:path';
-import { video_queue, clearfinishedVideoQueue } from './VideoConvertingQueue.js';
-import updatevideoqueue from './VideoConvertingQueue.js';
+import { video_queue, clearfinishedVideoQueue } from './UpdateVideoConvertingQueue.js';
+import updatevideoqueue from './UpdateVideoConvertingQueue.js';
 import { clients } from './server.js';
 import WebSocket from 'ws';
 
-export async function convertToDASH_single(inputFilePath, outputDir) {
+const MAX_CONCURRENT_CONVERSIONS = 3;
+let activeConversions = 0;
+let convertingQueue = [];
+
+export async function _executeConversion(inputFilePath, outputDir) {
 
 
     let startTime = Date.now();
@@ -47,6 +51,7 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                 console.log('No supported GPU detected. Falling back to software encoding:', videoCodec);
             }
 
+            const filename = path.basename(inputFilePath);
             ffmpeg(inputFilePath)
                 .videoCodec(videoCodec)
                 .audioCodec('aac')
@@ -63,6 +68,13 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                 .on('end', () => {
                     console.log('\nDASH conversion completed successfully!');
                     
+                    clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            let updateinfo = updatevideoqueue(filename, 100, Math.ceil((Date.now() - startTime) / 1000), true);
+                            client.send(JSON.stringify(updateinfo));
+                        }
+                    });
+                    clearfinishedVideoQueue();
                     resolve(outputDir)
                 })
                 .on('error', (err) => {
@@ -70,24 +82,18 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
                     reject(err);
                 })
                 .on('progress', (progress) => {
-                    const filename = path.basename(inputFilePath);
                     clients.forEach(client => {
                         if (client.readyState === WebSocket.OPEN) {
                             let updateinfo = updatevideoqueue(filename, Math.ceil(progress.percent), Math.ceil((Date.now() - startTime) / 1000));
                             client.send(JSON.stringify(updateinfo));
-                            clearfinishedVideoQueue();
+                            
                         }
                     });
                     loading(Math.ceil(progress.percent), 100, startTime);
                 })
                 .on('start', () => {
                     console.log('Start to convert to DASH of', inputFilePath);
-                    let convertingInfo = {
-                        name: path.basename(inputFilePath),
-                        percent: 0,
-                        time: 0,
-                    };
-                    video_queue.push(convertingInfo);
+                    
                 })
                 .run();
         });
@@ -95,3 +101,50 @@ export async function convertToDASH_single(inputFilePath, outputDir) {
 }
 
 
+async function processQueue() {
+    if (activeConversions >= MAX_CONCURRENT_CONVERSIONS || convertingQueue.length === 0) {
+        return; // 已達上限或佇列為空
+    }
+
+    const task = convertingQueue.shift(); // 從主轉換佇列中取出任務
+    const inputFilePath = task.inputFilePath; // 取得輸入檔案路徑
+    const outputDir = task.outputDir; // 取得輸出目錄
+    activeConversions++;
+    console.log(`[${task.uiUpdateName}] Picked from queue. Active conversions: ${activeConversions}. Queue size: ${convertingQueue.length}`);
+
+    _executeConversion(inputFilePath, outputDir)
+        .then(result => {
+            task.resolve(result); // 解析 convertToDASH_single 返回的 Promise
+        })
+        .catch(error => {
+            task.reject(error); // 拒絕 convertToDASH_single 返回的 Promise
+        })
+        .finally(() => {
+            activeConversions--;
+            console.log(`[${task.uiUpdateName}] Conversion completed. Active conversions: ${activeConversions}. Queue size: ${convertingQueue.length}`);
+            processQueue(); // 嘗試處理佇列中的下一個任務
+        });
+}
+
+export async function convertToDASH_single(inputFilePath, outputDir) {
+    return new Promise((resolve, reject) => {
+        const task = {
+            inputFilePath,
+            outputDir,
+            resolve,
+            reject,
+            uiUpdateName: path.basename(inputFilePath)
+        };
+
+        convertingQueue.push(task); // 將任務添加到主轉換佇列
+        let convertingInfo = {
+            name: path.basename(inputFilePath),
+            percent: 0,
+            time: 0,
+            finished: false
+        };
+        video_queue.push(convertingInfo);
+        console.log(`[${task.uiUpdateName}] Added to queue. Active conversions: ${activeConversions}. Queue size: ${convertingQueue.length}`);
+        processQueue(); // 嘗試處理佇列中的任務
+    });
+}

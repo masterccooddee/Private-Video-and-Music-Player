@@ -38,7 +38,7 @@ export default function App() {
     ws.current.onopen = () => console.log('WebSocket connection established');
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      const completedItems = data.filter((item) => item.percent === 100);
+      const completedItems = data.filter((item) => item.percent === 100 && item.finished);
       completedItems.forEach((item) => {
         successtoast.current.show({
           severity: 'success',
@@ -47,7 +47,7 @@ export default function App() {
           life: 30000,
         });
       });
-      const filteredData = data.filter(item => item.percent < 100);
+      const filteredData = data.filter(item => !(item.finished));
       setVideoStatus(filteredData);
     };
     ws.current.onclose = () => {

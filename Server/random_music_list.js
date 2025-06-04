@@ -1,5 +1,3 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 
 export default async function randomMusicList(db) {
     
@@ -32,10 +30,3 @@ export default async function randomMusicList(db) {
 
     return randomSelection;
 }
-
-// const db = await open({
-//     filename: 'media.db',
-//     driver: sqlite3.Database
-// });
-// let randomList = await randomMusicList(db);
-// console.log(randomList);
