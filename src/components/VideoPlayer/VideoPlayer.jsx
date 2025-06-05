@@ -9,7 +9,6 @@ const VideoPlayer = () => {
     const [currentEpId, setCurrentEpId] = useState(
       videoData.episodes && videoData.episodes[0] ? videoData.episodes[0].id : null
    ); // 預設使用第一集的ID
-    console.log('videoData:', videoData);
     let videoID = '';
     if (videoData.episodes !== undefined) {
         videoID = String(videoData.id) + '-' + String(videoData.episodes[0].id); // 如果有集數，則使用集數ID
@@ -17,7 +16,7 @@ const VideoPlayer = () => {
     else{
         videoID = String(videoData.id)
     }
-    console.log('videoID:', videoID);
+    //console.log('videoID:', videoID);
   let videooptions = {
     controls: true,
     autoplay: false,
@@ -53,6 +52,7 @@ const VideoPlayer = () => {
           sub: data.subtitle_url
         }));
         console.log('載入完成:', data);
+        //console.log('videoData:', videoData);
         setIsLoading(false);
         
       })
@@ -61,7 +61,7 @@ const VideoPlayer = () => {
         
       });
   }, [videoID]);
-  
+
   const currentEpIdRef = useRef(currentEpId);
   useEffect(() => {
       currentEpIdRef.current = currentEpId;
