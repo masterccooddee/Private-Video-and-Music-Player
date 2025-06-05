@@ -1,19 +1,21 @@
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar';
 import Topbar from './components/Topbar/Topbar';
-import HomePage from './pages/HomePage';
-import RankPage from './pages/RankPage';
-import TagPage from './pages/TagPage';
-import FavoritesPage from './pages/FavoritesPage';
-import UploadPage from './pages/UploadPage';
-import ProfilePage from './pages/ProfilePage';
-import LoginPage from './pages/LoginPage';
-import VideoPlayer from './components/VideoPlayer/VideoPlayer';
-import VideoStatus from './components/VideoStatus/videostatus';
-import MusicPlayer from './components/MusicPlayer/MusicPlayer';
 import { Toast } from 'primereact/toast';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const RankPage = lazy(() => import('./pages/RankPage'));
+const TagPage = lazy(() => import('./pages/TagPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
+const UploadPage = lazy(() => import('./pages/UploadPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const VideoPlayer = lazy(() => import('./components/VideoPlayer/VideoPlayer'));
+const VideoStatus = lazy(() => import('./components/VideoStatus/videostatus'));
+const MusicPlayer = lazy(() => import('./components/MusicPlayer/MusicPlayer'));
+
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -97,12 +99,13 @@ export default function App() {
       <main
         className="main-content"
         style={{
-          marginLeft: isSidebarCollapsed ? 55 : 200,
-          padding: '1rem',
+          marginLeft: isSidebarCollapsed ? 100 : 200,
+          marginRight:100,
+          padding: '1% 12%',
           minHeight: '100vh',
           backgroundColor: isDarkMode ? '#1e1e1e' : '#f5f5f5',
           color: isDarkMode ? '#fff' : '#000',
-          transition: 'none',
+          transition: 'margin-left 0.3s ease, margin-right 0.3s ease',
         }}
       >
         <Topbar isDarkMode={isDarkMode} />
