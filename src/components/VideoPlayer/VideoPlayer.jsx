@@ -66,26 +66,31 @@ const VideoPlayer = () => {
   const handleChangeVideo = (newSrc, epId) => {
     setIsLoading(true);
     setCurrentEpId(epId); // 設定目前播放的集數
+
     fetch(`/video/video:${newSrc}`)
     .then(res => res.json())
     .then(data => {
-        setOptions(() => ({
-            ...videooptions,
-            sources: [
-                {
-                    src: data.video_url,
-                    type: 'application/dash+xml',
-                },
-            ],
-            poster: data.poster_url,
-            sub: data.subtitle_url
-        }));
+        // 只在 epId 還是最新時才切換
+        if (epId === currentEpId) {
+            setOptions(() => ({
+                ...videooptions,
+                sources: [
+                    {
+                        src: data.video_url,
+                        type: 'application/dash+xml',
+                    },
+                ],
+                poster: data.poster_url,
+                sub: data.subtitle_url
+            }));
+        }
         setIsLoading(false);
     })
     .catch(err => {
         console.error('切換影片失敗:', err);
+        setIsLoading(false);
     });
-};
+  };
 
   const episodesBySeason = {};
     if (Array.isArray(videoData.episodes)) {
