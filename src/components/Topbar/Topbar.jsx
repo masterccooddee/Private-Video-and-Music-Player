@@ -23,6 +23,7 @@ function Topbar({ isDarkMode }) {
         const res = await axios.get(`/search?keyword=${encodeURIComponent(searchTerm)}`);
         setSuggestions(res.data || []);
         setShowSuggestions(true);
+        console.log('搜尋結果:', res.data);
       } catch (err) {
         console.error('搜尋失敗:', err);
         setSuggestions([]);
@@ -33,7 +34,9 @@ function Topbar({ isDarkMode }) {
   const handleClick = async (item) => {
     setSearchTerm(item.name || item.title || '');
     setShowSuggestions(false);
-    // console.log('item:', item);
+    console.log('item:', item);
+    console.log('item type:', item.type);
+
     if (item.type === 'video') {
       navigate('/video', {
         state: {
