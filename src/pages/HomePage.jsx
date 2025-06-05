@@ -13,7 +13,7 @@ export default function HomePage() {
         axios.get('/get_all')
             .then(res => {
                 const raw = res.data;
-                // console.log('Received data:', raw);
+                console.log('Received data:', raw);
                 const videoList = raw.videos.filter(v => v.type === 'video');
                 const videoSeriesList = raw.videos.filter(v => v.type === 'series');
                 const musicList = raw.music.filter(v => v.type === 'music');
@@ -25,7 +25,7 @@ export default function HomePage() {
                     raw.video_series.reduce((acc, ep) => {
                         const parent = videoSeriesList.find(s => s.id === ep.from_video_id);
                         if (!parent) return acc;
-
+                        // console.log('video Parent:', parent);
                         if (!acc[ep.from_video_id]) {
                             acc[ep.from_video_id] = {
                                 id: parent.id,
@@ -43,13 +43,14 @@ export default function HomePage() {
                 const musicGroupedSeries = Object.values(
                     raw.music_series.reduce((acc, ep) => {
                         const parent = musicSeriesList.find(s => s.id === ep.from_music_id);
+                        // console.log('Parent:', parent);
                         if (!parent) return acc;
 
                         if (!acc[ep.from_music_id]) {
                             acc[ep.from_music_id] = {
                                 id: parent.id,
                                 name: parent.name,
-                                poster: parent.poster,
+                                poster: parent.cover,
                                 firstEpisodeFile: `${ep.season}.mp3`,
                                 episodes: [],
                             };
