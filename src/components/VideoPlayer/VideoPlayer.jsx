@@ -61,34 +61,39 @@ const VideoPlayer = () => {
         
       });
   }, [videoID]);
-
+  
+  const currentEpIdRef = useRef(currentEpId);
+  useEffect(() => {
+      currentEpIdRef.current = currentEpId;
+  }, [currentEpId]);
+  
   const handleChangeVideo = (newSrc, epId) => {
-    setIsLoading(true);
-    setCurrentEpId(epId); // 設定目前播放的集數
-    console.log(epId, currentEpId);
-    fetch(`/video/video:${newSrc}`)
-    .then(res => res.json())
-    .then(data => {
-        // 只在 epId 還是最新時才切換
-        //if (epId === currentEpId) {
-            setOptions(() => ({
-                ...videooptions,
-                sources: [
-                    {
-                        src: data.video_url,
-                        type: 'application/dash+xml',
-                    },
-                ],
-                poster: data.poster_url,
-                sub: data.subtitle_url
-            }));
-        //}
-        setIsLoading(false);
-    })
-    .catch(err => {
-        console.error('切換影片失敗:', err);
-        setIsLoading(false);
-    });
+      setIsLoading(true);
+      setCurrentEpId(epId);
+  
+      fetch(`/video/video:${newSrc}`)
+          .then(res => res.json())
+          .then(data => {
+              // 只在 epId 還是最新時才切換
+              if (epId === currentEpIdRef.current) {
+                  setOptions(() => ({
+                      ...videooptions,
+                      sources: [
+                          {
+                              src: data.video_url,
+                              type: 'application/dash+xml',
+                          },
+                      ],
+                      poster: data.poster_url,
+                      sub: data.subtitle_url
+                  }));
+              }
+              setIsLoading(false);
+          })
+          .catch(err => {
+              console.error('切換影片失敗:', err);
+              setIsLoading(false);
+          });
   };
 
   const episodesBySeason = {};
