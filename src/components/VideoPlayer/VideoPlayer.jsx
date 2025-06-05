@@ -16,7 +16,7 @@ const VideoPlayer = () => {
     else{
         videoID = String(videoData.id)
     }
-    //console.log('videoID:', videoID);
+    console.log('videoID in VideoPlayer:', videoID);
   let videooptions = {
     controls: true,
     autoplay: false,
@@ -34,8 +34,9 @@ const VideoPlayer = () => {
     const [isLoading, setIsLoading] = useState(true);
     const havefetch = useRef(false);
   useEffect(() => {
-      if (havefetch.current) return; // 確保只執行一次
-      havefetch.current = true;
+      /* if (havefetch.current) return; // 確保只執行一次
+      havefetch.current = true; */
+    console.log('videoID changed:', videoID);
     fetch(`/video/video:${videoID}`)
     .then(res => res.json())
     .then(data => {
