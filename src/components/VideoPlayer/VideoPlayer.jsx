@@ -65,12 +65,12 @@ const VideoPlayer = () => {
   const handleChangeVideo = (newSrc, epId) => {
     setIsLoading(true);
     setCurrentEpId(epId); // 設定目前播放的集數
-
+    console.log(epId, currentEpId);
     fetch(`/video/video:${newSrc}`)
     .then(res => res.json())
     .then(data => {
         // 只在 epId 還是最新時才切換
-        if (epId === currentEpId) {
+        //if (epId === currentEpId) {
             setOptions(() => ({
                 ...videooptions,
                 sources: [
@@ -82,7 +82,7 @@ const VideoPlayer = () => {
                 poster: data.poster_url,
                 sub: data.subtitle_url
             }));
-        }
+        //}
         setIsLoading(false);
     })
     .catch(err => {
