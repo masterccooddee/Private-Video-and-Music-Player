@@ -9,7 +9,6 @@ const VideoPlayer = () => {
     const [currentEpId, setCurrentEpId] = useState(
       videoData.episodes && videoData.episodes[0] ? videoData.episodes[0].id : null
    ); // 預設使用第一集的ID
-    console.log('videoData:', videoData);
     let videoID = '';
     if (videoData.episodes !== undefined) {
         videoID = String(videoData.id) + '-' + String(videoData.episodes[0].id); // 如果有集數，則使用集數ID
@@ -17,7 +16,7 @@ const VideoPlayer = () => {
     else{
         videoID = String(videoData.id)
     }
-    console.log('videoID:', videoID);
+    console.log('videoID in VideoPlayer:', videoID);
   let videooptions = {
     controls: true,
     autoplay: false,
@@ -35,8 +34,9 @@ const VideoPlayer = () => {
     const [isLoading, setIsLoading] = useState(true);
     const havefetch = useRef(false);
   useEffect(() => {
-      if (havefetch.current) return; // 確保只執行一次
-      havefetch.current = true;
+      /* if (havefetch.current) return; // 確保只執行一次
+      havefetch.current = true; */
+    console.log('videoID changed:', videoID);
     fetch(`/video/video:${videoID}`)
     .then(res => res.json())
     .then(data => {
@@ -53,6 +53,7 @@ const VideoPlayer = () => {
           sub: data.subtitle_url
         }));
         console.log('載入完成:', data);
+        //console.log('videoData:', videoData);
         setIsLoading(false);
         
       })
@@ -62,33 +63,38 @@ const VideoPlayer = () => {
       });
   }, [videoID]);
 
+  const currentEpIdRef = useRef(currentEpId);
+  useEffect(() => {
+      currentEpIdRef.current = currentEpId;
+  }, [currentEpId]);
+  
   const handleChangeVideo = (newSrc, epId) => {
-    setIsLoading(true);
-    setCurrentEpId(epId); // 設定目前播放的集數
-    console.log(epId, currentEpId);
-    fetch(`/video/video:${newSrc}`)
-    .then(res => res.json())
-    .then(data => {
-        // 只在 epId 還是最新時才切換
-        //if (epId === currentEpId) {
-            setOptions(() => ({
-                ...videooptions,
-                sources: [
-                    {
-                        src: data.video_url,
-                        type: 'application/dash+xml',
-                    },
-                ],
-                poster: data.poster_url,
-                sub: data.subtitle_url
-            }));
-        //}
-        setIsLoading(false);
-    })
-    .catch(err => {
-        console.error('切換影片失敗:', err);
-        setIsLoading(false);
-    });
+      setIsLoading(true);
+      setCurrentEpId(epId);
+  
+      fetch(`/video/video:${newSrc}`)
+          .then(res => res.json())
+          .then(data => {
+              // 只在 epId 還是最新時才切換
+              if (epId === currentEpIdRef.current) {
+                  setOptions(() => ({
+                      ...videooptions,
+                      sources: [
+                          {
+                              src: data.video_url,
+                              type: 'application/dash+xml',
+                          },
+                      ],
+                      poster: data.poster_url,
+                      sub: data.subtitle_url
+                  }));
+              }
+              setIsLoading(false);
+          })
+          .catch(err => {
+              console.error('切換影片失敗:', err);
+              setIsLoading(false);
+          });
   };
 
   const episodesBySeason = {};
