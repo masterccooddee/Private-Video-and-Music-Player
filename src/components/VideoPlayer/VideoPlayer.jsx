@@ -32,10 +32,8 @@ const VideoPlayer = () => {
 
     const [options, setOptions] = useState(videooptions);
     const [isLoading, setIsLoading] = useState(true);
-    const havefetch = useRef(false);
+    //const havefetch = useRef(false);
   useEffect(() => {
-      /* if (havefetch.current) return; // 確保只執行一次
-      havefetch.current = true; */
     console.log('videoID changed:', videoID);
     fetch(`/video/video:${videoID}`)
     .then(res => res.json())
@@ -52,6 +50,7 @@ const VideoPlayer = () => {
           poster: data.poster_url,
           sub: data.subtitle_url
         }));
+
         console.log('載入完成:', data);
         //console.log('videoData:', videoData);
         setIsLoading(false);
@@ -61,6 +60,7 @@ const VideoPlayer = () => {
         console.error('失敗:', err);
         
       });
+    
   }, [videoID]);
 
   const currentEpIdRef = useRef(currentEpId);
