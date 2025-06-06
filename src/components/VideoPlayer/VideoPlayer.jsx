@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TabView, TabPanel } from 'primereact/tabview';
 import VideoJS from './VideoJS';
-
 const VideoPlayer = () => {
     const location = useLocation();
     const videoData = location.state || {};
@@ -111,9 +110,11 @@ const VideoPlayer = () => {
       <div style={{ padding: '24px', textAlign:'left', position: 'relative', width: '100%' }}>
           <h2>{videoData?.name || '影片播放器'}</h2>
           {isLoading ? (
+            <div>
               <p>Loading...</p>
+            </div>
           ) : (
-              <VideoJS options={options}/>
+            <VideoJS options={options}/>
           )}
 
           <TabView>
