@@ -1,6 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { convertToDASH_single } from './video_DASH_converter.js';
+import {
+    VideoExpireTime,
+    VideoAddExpireTime,
+    PreConvertEpisodesCount
+} from './config.js';
 
 let converting_set = new Set();
 let convert_promise = new Map();
@@ -11,8 +16,17 @@ export async function serve_video(id, db, redis) {
     if (cache) {
         console.log('cache:', cache);
         const remainingTTL = await redis.ttl(key);
-        if (remainingTTL >= 0)
-            await redis.expire(key, 600 + remainingTTL); // Refresh cache expiration time
+        let addtime = 0;
+        if (remainingTTL >= 0){
+            if (remainingTTL + VideoAddExpireTime > VideoExpireTime) {
+                addtime = VideoExpireTime;
+            }
+            else {
+                addtime = VideoAddExpireTime + remainingTTL;
+            }
+            await redis.expire(key, addtime); // Refresh cache expiration time
+        }
+            
         (async () => {
             if (id.includes('-')) {
                 let reg = /video:(?<video_id>\d+)-(?<series_id>\d+)/;
@@ -26,7 +40,7 @@ export async function serve_video(id, db, redis) {
                     const video = await db.get('SELECT name, poster FROM videos WHERE id = ?', [video_id]);
                     if (video && video_series) {
                         // 預轉換下一集和下下一集
-                        preconvertNextEpisodes(db, redis, video, video_series, video_id, 2); // 預轉換下一集和下下一集
+                        preconvertNextEpisodes(db, redis, video, video_series, video_id, PreConvertEpisodesCount); // 預轉換下一集和下下一集
                     }
                 }
             }
@@ -86,7 +100,7 @@ export async function serve_video(id, db, redis) {
                         subtitle_url: video_subtitle
                     };
                     output = JSON.stringify(output);
-                    redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
+                    redis.set(key, output, 'EX', VideoExpireTime); 
                     return output; // 直接返回結果
                 } finally {
                     converting_set.delete(key); // 移除轉換標記
@@ -96,7 +110,7 @@ export async function serve_video(id, db, redis) {
 
             convert_promise.set(key, conversionPromise); // 存儲 Promise
             // 預轉換
-            preconvertNextEpisodes(db, redis, video, video_series, video_id, 2); // 預轉換下一集和下下一集
+            preconvertNextEpisodes(db, redis, video, video_series, video_id, PreConvertEpisodesCount); // 預轉換下一集和下下一集
             return conversionPromise; // 返回 Promise
 
         }
@@ -126,7 +140,7 @@ export async function serve_video(id, db, redis) {
                         subtitle_url: video_subtitle
                     };
                     output = JSON.stringify(output);
-                    redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
+                    redis.set(key, output, 'EX', VideoExpireTime); 
                     return output; // 解析 Promise
                 } finally {
                     converting_set.delete(key); // 移除轉換標記
@@ -184,7 +198,7 @@ async function preconvertNextEpisodes(
                             subtitle_url: JSON.parse(nextEpisodeInfo.subtitle)
                         };
                         output = JSON.stringify(output);
-                        redis.set(key, output, 'EX', 3600); // Cache for 30 minutes
+                        redis.set(key, output, 'EX', VideoExpireTime); 
                         return output; // 直接返回結果
                     } finally {
                         converting_set.delete(key); // 移除轉換標記

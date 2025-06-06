@@ -6,8 +6,8 @@ import { video_queue, clearfinishedVideoQueue } from './UpdateVideoConvertingQue
 import updatevideoqueue from './UpdateVideoConvertingQueue.js';
 import { clients } from './server.js';
 import WebSocket from 'ws';
+import { MAX_CONCURRENT_CONVERSIONS } from './config.js'; 
 
-const MAX_CONCURRENT_CONVERSIONS = 3;
 let activeConversions = 0;
 let convertingQueue = [];
 
