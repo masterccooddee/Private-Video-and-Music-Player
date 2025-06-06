@@ -1,6 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { convertAudio } from './audio_converter.js';
+import {
+    MusicExpireTime,
+    MusicAddExpireTime
+} from './config.js';
 
 export async function serve_music(id, db, redis) {
 
@@ -10,8 +14,17 @@ export async function serve_music(id, db, redis) {
     const cache = await redis.get(key);
     if (cache) {
         const remainingTTL = await redis.ttl(key);
-        if (remainingTTL >= 0)
-            await redis.expire(key, 30 + remainingTTL); // Refresh cache expiration time
+        let addtime = 0;
+        if (remainingTTL >= 0){
+            if (remainingTTL + MusicAddExpireTime > MusicExpireTime) {
+                addtime = MusicExpireTime;
+            }
+            else {
+                addtime = MusicAddExpireTime + remainingTTL;
+            }
+            await redis.expire(key, addtime); // Refresh cache expiration time
+        }
+            
         return cache;
     }
     else {
@@ -33,7 +46,7 @@ export async function serve_music(id, db, redis) {
             };
             audio_info = JSON.stringify(audio_info);
             // console.log('output:', output);
-            redis.set(key, audio_info, 'EX', 180); // Cache for 24 hours
+            redis.set(key, audio_info, 'EX', MusicExpireTime); // Cache for 24 hours
             return audio_info;
         }
         else {
@@ -50,7 +63,7 @@ export async function serve_music(id, db, redis) {
                 cover_url: music.cover,
             };
             audio_info = JSON.stringify(audio_info);
-            redis.set(key, audio_info, 'EX', 180); // Cache for 24 hours
+            redis.set(key, audio_info, 'EX', MusicExpireTime); // Cache for 24 hours
             return audio_info;
         }
 
@@ -78,6 +91,3 @@ async function checkAudioSupport(music_path, name, output) {
         return converted_path;
     }
 }
-
-// let out = await checkAudioSupport('D:\\School\\3\\JS\\Project_MultiMediaPlayer\\Music\\搖曳露營 ED.mp3', '003. 天使にふれたよ!', 'output');
-// console.log(out);

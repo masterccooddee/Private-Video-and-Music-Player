@@ -112,11 +112,10 @@ wss.on('connection', (ws) => {
     });
 });
 
-import cors from 'cors';
 
 const app = express();
 app.use(morgan('dev'));
-app.use(cors());
+
 
 app.use('/', express.static('../public'));
 app.use('/cover', express.static('../public/music_cover'));
