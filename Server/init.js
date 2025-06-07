@@ -268,7 +268,7 @@ async function classifyMedia(db) {
             for (const file of albumFiles) {
                 const musicname = path.basename(file, path.extname(file));
                 const fileExt = path.extname(file).toLowerCase();
-                if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
+                if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg' || fileExt === '.m4a') {
                     const filePath = path.join(albumPath, file);
                     const info = await findCoverofMusic(filePath);
                     musiclist.push({ path: filePath, name: musicname, cover: info.cover_path, id: album_ID, info: JSON.stringify(info) });
@@ -285,8 +285,8 @@ async function classifyMedia(db) {
             const musicname = path.basename(musicFile, path.extname(musicFile));
             const filePath = path.join(musicFolder, musicFile);
             const fileExt = path.extname(filePath).toLowerCase();
-            if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
-                // console.log('Found music file:', musicFile);
+            if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg' || fileExt === '.m4a') {
+                
                 //Find Cover
                 const info = await findCoverofMusic(filePath);
                 alone_music_list.push({ path: filePath, name: musicname, cover: info.cover_path, type: 'music', info: JSON.stringify(info) });
