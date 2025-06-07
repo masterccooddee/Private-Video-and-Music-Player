@@ -117,7 +117,7 @@ export default function HomePage() {
                                 state: {
                                     id: item.id,
                                     name: item.name,
-                                    poster: item.poster,
+                                    poster: item.cover,
                                     file: item.firstEpisodeFile,
                                     type: item.type,
                                     episodes: item.episodes
