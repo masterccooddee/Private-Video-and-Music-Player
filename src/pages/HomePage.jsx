@@ -43,19 +43,26 @@ export default function HomePage() {
                 const musicGroupedSeries = Object.values(
                     raw.music_series.reduce((acc, ep) => {
                         const parent = musicSeriesList.find(s => s.id === ep.from_music_id);
-                        // console.log('Parent:', parent);
                         if (!parent) return acc;
 
                         if (!acc[ep.from_music_id]) {
                             acc[ep.from_music_id] = {
                                 id: parent.id,
                                 name: parent.name,
-                                poster: parent.cover,
+                                poster: '',
                                 firstEpisodeFile: `${ep.season}.mp3`,
-                                episodes: [],
+                                episodes: [ep], 
                             };
+                        } else {
+                            acc[ep.from_music_id].episodes.push(ep);
                         }
-                        acc[ep.from_music_id].episodes.push(ep);
+
+                        const group = acc[ep.from_music_id];
+                        if (!group.poster) {
+                            const firstEp = group.episodes[0];
+                            group.poster = parent.cover || firstEp.cover || '';
+                        }
+
                         return acc;
                     }, {})
                 );
