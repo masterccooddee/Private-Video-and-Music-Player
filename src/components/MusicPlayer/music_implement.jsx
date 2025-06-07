@@ -314,19 +314,37 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
                 onMouseMove={handleMouseMoveProgress}
                 onMouseUp={handleMouseUp}
             >
-                <div className="track-info">
-                    <img className="img" src={track.cover_url} alt="專輯封面" />
+                {/* 將圖片獨立出來，使其在全螢幕模式下可以獨立置中 */}
+                {fullscreen && (
+                    <div className="track-info">
+                        <img className="img" src={track.cover_url} alt="專輯封面" />
+                        <div className="track-info-text">
+                            {nameNode}
+                            <div className="artist">{track.artist}</div>
+                        </div>
+                    </div>
+                )}
+                {/* 在最小化模式下保持原來的 .track-info 結構 */}
+                {!fullscreen && (
+                    <div className="track-info">
+                        <img className="img" src={track.cover_url} alt="專輯封面" />
+                        <div className="track-info-text">
+                            {nameNode}
+                            <div className="artist">{track.artist}</div>
+                        </div>
+                    </div>
+                )}
+
+                {/* 文字資訊部分，在全螢幕模式下放在圖片下方 */}
+                {/* {fullscreen && (
                     <div className="track-info-text">
                         {nameNode}
                         <div className="artist">{track.artist}</div>
                     </div>
-                </div>
+                )} */}
+
+                {/* 控制項容器 */}
                 <div className="controls-container">
-                    {/* <div className="progress-container">
-                        <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
-                        <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
-                        <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
-                    </div> */}
                     {!fullscreen && (
                         <>
                             <div className="controls">

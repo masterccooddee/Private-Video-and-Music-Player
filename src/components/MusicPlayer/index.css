@@ -502,14 +502,13 @@ body {
 }
 
 /* 全螢幕模式歌名歌手置中 */
-.player-fullscreen .track-info-text {
+.player-fullscreen .track-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin: clamp(16px, 3vh, 24px) 0;
-  flex-shrink: 1;
-  min-height: 0;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 90%;
 }
 
 .player-fullscreen .name {
