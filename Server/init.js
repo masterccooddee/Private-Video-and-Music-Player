@@ -54,7 +54,7 @@ function initDB() {
             path TEXT NOT NULL UNIQUE,
             type TEXT NOT NULL,
             total_episodes TEXT,
-            poster TEXT NOT NULL,
+            poster TEXT DEFAULT '-1',
             subtitle TEXT
         );
 
@@ -192,11 +192,15 @@ async function classifyMedia(db) {
                     // 如果有多個影片檔案，則是系列影片
                     else if (videoFiles.length > 1) {
 
+                        if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
+                            PutInSeriesPoster(db, filePath, folder);
+                            continue;
+                        }
                         //檢查是否已經存在，存在代表已把全部集數放入資料庫
                         const video = db.prepare('SELECT name FROM videos WHERE name = ?').get(folder);
                         if (video === undefined) {
                             const seriesPath = folderpath;
-                            db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
+                            db.prepare('INSERT INTO videos (name, path, type) VALUES (@name,@path,@type)').run({ name: folder, path: seriesPath, type: 'series'});
                             let season = 'NONE';
                             await classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
                         }
@@ -204,10 +208,7 @@ async function classifyMedia(db) {
                             continue;
                         }
 
-                        if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
-                            PutInSeriesPoster(db, filePath, folder);
-                            // console.log('Found poster file:', folder);
-                        }
+                        
                     }
                     // 如果沒有影片檔案，則是系列影片的海報
                     else if (videoFiles.length == 0) {
