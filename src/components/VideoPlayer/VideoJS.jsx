@@ -5,6 +5,8 @@ let octopusInstance = null; // 用於存儲 SubtitlesOctopus 實例
 let subtitlesEnabled = false;
 
 function setupSubtitles(player, options) {
+
+    // 清理之前的 SubtitlesOctopus 實例
     if (octopusInstance){
         console.log('Disposed previous SubtitlesOctopus instance');
         //octopusInstance.dispose(); // 確保清理之前的實例
@@ -93,6 +95,7 @@ export const VideoJS = (props) => {
     const { options, onReady } = props;
     React.useEffect(() => {
         console.log("something changed in VideoJS", options);
+        // 檢查是不是第一次渲染，並且 sources 有 src
         if (!playerRef.current && options.sources[0].src) {
 
             const player = (playerRef.current = window.videojs(videoRef.current, options, () => {
