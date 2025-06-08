@@ -1,0 +1,136 @@
+.vp-root {
+  padding: 24px;
+  text-align: left;
+  position: relative;
+  width: 100%;
+}
+
+.vp-title {
+  /* 你可加字體、顏色等 */
+}
+
+.vp-loading {
+  text-align: center;
+  margin: 48px 0;
+}
+
+body.dark-mode .vp-loading {
+  color: #ffffff;
+}
+
+.vp-episodes-panel {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px 0;
+  text-align: left;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+body.dark-mode .vp-episodes-panel {
+  background: #23272f;
+}
+
+.vp-episode-btn {
+  margin: 0 12px;
+  width: 80px;
+  height: 40px;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  background: #ededed;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.vp-episode-btn.active {
+  background: #1976d2;
+  color: #fff;
+  border: 2px solid #1976d2;
+}
+
+/* 深色模式按鈕樣式 */
+body.dark-mode .vp-episode-btn {
+  background: #23272f;
+  color: #eee;
+  border: 1px solid #444;
+}
+
+body.dark-mode .vp-episode-btn.active {
+  background: #90caf9;
+  color: #222;
+  border: 2px solid #90caf9;
+}
+
+/* TabView 整體背景 */
+.p-tabview {
+  background: #fff;
+  border-radius: 8px;
+}
+
+/* Tab 標籤列 */
+.p-tabview-nav {
+  background: #f5f5f5;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #f5f5f5;
+}
+
+/* Tab 內容區 */
+.p-tabview-panels {
+  background: #f5f5f5;
+  border-radius: 0 0 8px 8px;
+}
+
+/* 深色模式覆蓋 */
+body.dark-mode .p-tabview {
+  background: #000000;
+}
+
+body.dark-mode .p-tabview-nav {
+  background: #23272f;
+  border-bottom: 2px solid #23272f;
+}
+
+body.dark-mode .p-tabview-panels {
+  background: #23272f;
+}
+
+/* Tab 標籤預設顏色 */
+.p-tabview-nav .p-tabview-nav-link {
+  color: #222;
+  background: transparent;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Tab 標籤 hover 效果 */
+.p-tabview-nav .p-tabview-nav-link:hover {
+  color: #1976d2;
+  background: #e3eaff;
+}
+
+/* Tab 標籤 active 狀態 */
+.p-tabview-nav .p-tabview-nav-link.p-highlight {
+  color: #fff;
+  background: #1976d2;
+}
+
+/* 深色模式下 Tab 標籤顏色 */
+body.dark-mode .p-tabview-nav .p-tabview-nav-link {
+  color: #eee;
+  background: transparent;
+}
+
+body.dark-mode .p-tabview-nav .p-tabview-nav-link:hover {
+  color: #90caf9;
+  background: #23272f;
+}
+
+body.dark-mode .p-tabview-nav .p-tabview-nav-link.p-highlight {
+  color: #fff;
+  background: #1976d2;
+}
