@@ -22,7 +22,7 @@ const VideoPlayer = () => {
     else{
         videoID = String(videoData.id)
     }
-    console.log('videoID in VideoPlayer:', videoID);
+    //console.log('videoID in VideoPlayer:', videoID);
   let videooptions = {
     controls: true,
     autoplay: false,
