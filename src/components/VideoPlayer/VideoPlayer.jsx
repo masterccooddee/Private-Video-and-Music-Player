@@ -2,6 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TabView, TabPanel } from 'primereact/tabview';
 import VideoJS from './VideoJS';
+import { tailChase } from 'ldrs'
+import { TailChase } from 'ldrs/react'
+import 'ldrs/react/TailChase.css'
+
+// Default values shown
+
+
 const VideoPlayer = () => {
     const location = useLocation();
     const videoData = location.state || {};
@@ -112,6 +119,11 @@ const VideoPlayer = () => {
           {isLoading ? (
             <div>
               <p>Loading...</p>
+              <TailChase
+                size="40"
+                speed="1.75"
+                color="black" 
+              />
             </div>
           ) : (
             <VideoJS options={options}/>
