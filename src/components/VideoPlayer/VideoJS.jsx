@@ -5,15 +5,18 @@ let octopusInstance = null; // 用於存儲 SubtitlesOctopus 實例
 let subtitlesEnabled = false;
 
 function setupSubtitles(player, options) {
-    if (octopusInstance !== null){
-        octopusInstance.dispose(); // 確保清理之前的實例
+
+    // 清理之前的 SubtitlesOctopus 實例
+    if (octopusInstance){
         console.log('Disposed previous SubtitlesOctopus instance');
+        //octopusInstance.dispose(); // 確保清理之前的實例
         subtitlesEnabled = false; // 重置字幕啟用狀態
         octopusInstance = null; // 清除之前的實例
     }
 
     const subtitles_arr = options.sub || [];
     console.log('Subtitles:', subtitles_arr);
+    // 添加多個字幕選項
     if (subtitles_arr.length === 0) {
         console.log('No subtitles available');
         return;
@@ -34,6 +37,7 @@ function setupSubtitles(player, options) {
                 default: false,
             }, false);
         } else {
+            // 使用 SubtitlesOctopus
             player.addRemoteTextTrack({
                 kind: 'subtitles',
                 label: sub.label,
@@ -41,32 +45,40 @@ function setupSubtitles(player, options) {
                 default: false,
             }, false);
         }
+
     });
+
+    // 監聽字幕選擇事件
 
     player.textTracks().addEventListener('change', () => {
         const activeTrack = Array.from(player.textTracks()).find(track => track.mode === 'showing');
         if (activeTrack) {
             const selectedSubtitle = subtitles.find(sub => sub.label === activeTrack.label);
             if (selectedSubtitle) {
+                // 啟用 SubtitlesOctopus
                 if (octopusInstance) {
-                    octopusInstance.dispose();
+                    octopusInstance.dispose(); // 銷毀當前的實例
                 }
                 if (selectedSubtitle.subUrl.includes('.vtt') || selectedSubtitle.subUrl.includes('.srt')) {
-                    octopusInstance = null;
+                    octopusInstance = null; // 如果是 VTT，則不使用 SubtitlesOctopus
+
                 } else {
-                    octopusInstance = null;
-                    const octopusOptions = {
+                    // 使用 SubtitlesOctopus
+                    octopusInstance = null; // 先清除舊的實例
+                    const options = {
                         video: player.el().querySelector('video'),
                         subUrl: selectedSubtitle.subUrl,
                         fonts: ['/fonts/SourceHanSansTC-Medium.otf'],
                         workerUrl: '/libass-wasm/dist/js/subtitles-octopus-worker.js',
                     };
-                    octopusInstance = new SubtitlesOctopus(octopusOptions);
+                    octopusInstance = new SubtitlesOctopus(options);
                     subtitlesEnabled = true;
                     console.log(`SubtitlesOctopus enabled for ${selectedSubtitle.label}`);
                 }
+
             }
         } else {
+            // 關閉 SubtitlesOctopus
             if (subtitlesEnabled && octopusInstance) {
                 octopusInstance.dispose();
                 octopusInstance = null;
@@ -83,6 +95,7 @@ export const VideoJS = (props) => {
     const { options, onReady } = props;
     React.useEffect(() => {
         console.log("something changed in VideoJS", options);
+        // 檢查是不是第一次渲染，並且 sources 有 src
         if (!playerRef.current && options.sources[0].src) {
 
             const player = (playerRef.current = window.videojs(videoRef.current, options, () => {

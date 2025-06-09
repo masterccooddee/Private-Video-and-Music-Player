@@ -121,7 +121,7 @@ app.use('/', express.static('../public'));
 app.use('/cover', express.static('../public/music_cover'));
 app.use('/Music', express.static('../../Music'));
 
-app.get(/\/Video.*.srt/, async (req, res) => {
+app.get(/\/Video.*\.srt/, async (req, res) => {
     const filepath = '../..' + decodeURIComponent(req.path);
     console.log('srt file path:', filepath);
     const stream = await SRT2WVTT(filepath);

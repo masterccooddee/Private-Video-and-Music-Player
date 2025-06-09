@@ -54,7 +54,7 @@ function initDB() {
             path TEXT NOT NULL UNIQUE,
             type TEXT NOT NULL,
             total_episodes TEXT,
-            poster TEXT NOT NULL,
+            poster TEXT DEFAULT '-1',
             subtitle TEXT
         );
 
@@ -97,7 +97,7 @@ function initDB() {
 //基本結構
 // 📂Upper folder
 // ├── 📂Video
-// │   ├── 📂video1      ✔️
+// │   ├── 📂video1      
 // │   │   ├── video1.mp4
 // │   │   └── video1.jpg
 // │   ├── 📂video2
@@ -110,8 +110,9 @@ function initDB() {
 // │   │   └── video2.jpg
 // │   ├── 📂video3
 // │   │   ├── video3_E1.mp4
-// │   │   └── video3_E2.mp4
-// │   └── video3.mp4        ✔️
+// │   │   ├── video3_E2.mp4
+// │   |   └── video3.jpg
+// │   └── video4.mp4        
 // ├── 📂Music
 // │   ├── 📂專輯名稱
 // │   │   ├── 歌曲名稱1.mp3
@@ -192,11 +193,15 @@ async function classifyMedia(db) {
                     // 如果有多個影片檔案，則是系列影片
                     else if (videoFiles.length > 1) {
 
+                        if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
+                            PutInSeriesPoster(db, filePath, folder);
+                            continue;
+                        }
                         //檢查是否已經存在，存在代表已把全部集數放入資料庫
                         const video = db.prepare('SELECT name FROM videos WHERE name = ?').get(folder);
                         if (video === undefined) {
                             const seriesPath = folderpath;
-                            db.prepare('INSERT INTO videos (name, path, type, poster) VALUES (@name,@path,@type,@poster)').run({ name: folder, path: seriesPath, type: 'series', poster: '-1' });
+                            db.prepare('INSERT INTO videos (name, path, type) VALUES (@name,@path,@type)').run({ name: folder, path: seriesPath, type: 'series'});
                             let season = 'NONE';
                             await classifyVideoSeries(db, seriesPath, folder, season); // 季資料夾處理
                         }
@@ -204,10 +209,7 @@ async function classifyMedia(db) {
                             continue;
                         }
 
-                        if (fileExt === '.jpg' || fileExt === '.png' || fileExt === '.jpeg' || fileExt === '.webp') {
-                            PutInSeriesPoster(db, filePath, folder);
-                            // console.log('Found poster file:', folder);
-                        }
+                        
                     }
                     // 如果沒有影片檔案，則是系列影片的海報
                     else if (videoFiles.length == 0) {
@@ -266,7 +268,7 @@ async function classifyMedia(db) {
             for (const file of albumFiles) {
                 const musicname = path.basename(file, path.extname(file));
                 const fileExt = path.extname(file).toLowerCase();
-                if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
+                if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg' || fileExt === '.m4a') {
                     const filePath = path.join(albumPath, file);
                     const info = await findCoverofMusic(filePath);
                     musiclist.push({ path: filePath, name: musicname, cover: info.cover_path, id: album_ID, info: JSON.stringify(info) });
@@ -283,8 +285,8 @@ async function classifyMedia(db) {
             const musicname = path.basename(musicFile, path.extname(musicFile));
             const filePath = path.join(musicFolder, musicFile);
             const fileExt = path.extname(filePath).toLowerCase();
-            if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg ' || fileExt === '.m4a') {
-                // console.log('Found music file:', musicFile);
+            if (fileExt === '.mp3' || fileExt === '.wav' || fileExt === '.flac' || fileExt === '.aac' || fileExt === '.ogg' || fileExt === '.m4a') {
+                
                 //Find Cover
                 const info = await findCoverofMusic(filePath);
                 alone_music_list.push({ path: filePath, name: musicname, cover: info.cover_path, type: 'music', info: JSON.stringify(info) });
@@ -466,32 +468,58 @@ async function findPosterFromTMDB(db, tmdb_key) {
 
 }
 
-async function getPosterFromTMDB(videoname, tmdb_key) {
-    try {
-        const response = await axios.get('https://api.themoviedb.org/3/search/multi', {
-            params: {
-                query: videoname,
-                included_adult: true,
-                language: 'zh-TW',
-                page: 1
-            },
-            headers: {
-                accept: 'application/json',
-                Authorization: `Bearer ${tmdb_key}`
-            }
+async function getPosterFromTMDB(videoname, tmdb_key, maxRetries = 3, initialDelayMs = 1000) {
+    let retries = 0;
+    let currentDelayMs = initialDelayMs;
 
-        });
-        if (response.data.results[0] === undefined) {
-            return null;
+    while (retries < maxRetries) {
+        try {
+            const response = await axios.get('https://api.themoviedb.org/3/search/multi', {
+                params: {
+                    query: videoname,
+                    included_adult: true, 
+                    language: 'zh-TW',    
+                    page: 1
+                },
+                headers: {
+                    accept: 'application/json',
+                    Authorization: `Bearer ${tmdb_key}`
+                }
+            });
+
+            if (response.data.results && response.data.results.length > 0 && response.data.results[0].poster_path) {
+                return 'https://image.tmdb.org/t/p/original' + response.data.results[0].poster_path;
+            } else {
+                // console.log(`No poster found on TMDB for: ${videoname}`);
+                return null;
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response && error.response.status === 429) { // 如果是 429 錯誤，表示 TMDB API 的速率限制被觸發
+                retries++;
+                let retryAfterSeconds = parseInt(error.response.headers['retry-after'], 10);
+                let waitMs = currentDelayMs;
+
+                if (!isNaN(retryAfterSeconds) && retryAfterSeconds > 0) {
+                    waitMs = retryAfterSeconds * 1000;
+                    console.warn(`TMDB API rate limit hit for "${videoname}". Retry-After: ${retryAfterSeconds}s. Retrying (attempt ${retries}/${maxRetries})...`);
+                } else {
+                    console.warn(`TMDB API rate limit hit for "${videoname}". Retrying in ${waitMs / 1000}s (attempt ${retries}/${maxRetries})...`);
+                }
+
+                if (retries >= maxRetries) {
+                    console.error(`TMDB API rate limit exceeded for "${videoname}" after ${maxRetries} retries. Giving up.`);
+                    return null;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, waitMs));
+                currentDelayMs *= 2; // 指數退避，用於沒有 Retry-After 或下一次預設等待
+            } else {
+                console.error(`Error fetching data from TMDB for "${videoname}":`, error.message);
+                return null; // 對於其他錯誤，不重試
+            }
         }
-        let poster_url = 'https://image.tmdb.org/t/p/original' + response.data.results[0].poster_path;
-        // console.log('Poster URL:', poster_url);
-        return poster_url;
     }
-    catch (error) {
-        console.error('Error fetching data from TMDB:', error);
-        return null;
-    }
+    return null; // 如果達到最大重試次數
 }
 
 // findCoverofMusic
