@@ -93,6 +93,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
 
         setIsRequesting(true);
         setIsLoading(true);
+        setIsClosed(false);
+        setFullscreen(false);
 
         try {
             const response = await fetch(`/music/music:${musicId}`);
@@ -209,6 +211,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
             if (requestTimeoutRef.current) {
                 clearTimeout(requestTimeoutRef.current);
             }
+            document.body.style.overflow = 'auto';
         };
     }, [Musicid]);
 
@@ -270,14 +273,9 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     }, [track && track.name, fullscreen]);
 
     useEffect(() => {
-        if (fullscreen) {
-            document.body.style.overflow = 'hidden';
-        }
-        else{
-            document.body.style.overflow = '';
-        }
+        document.body.style.overflow = 'auto';
         return () => {
-            document.body.style.overflow = '';
+            document.body.style.overflow = 'auto';
         };
     }, [fullscreen]);
 
@@ -349,6 +347,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         audioRef.current.pause();
         audioRef.current.src = '';
         setIsClosed(true);
+        setFullscreen(false);
     };
 
     const toggleFullscreen = () => setFullscreen(!fullscreen);
@@ -492,7 +491,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         );
     };
 
-    return { render };
+    return { render, randomTracks, loadRandomTracks };
 };
 
 export default useMusicPlayer;
