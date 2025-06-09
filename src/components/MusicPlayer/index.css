@@ -10,8 +10,8 @@ body {
 .container {
     position: relative;
     width: 100%;
+    height: auto;
     margin: 0;
-    padding-bottom: 350px;
 }
 
 .track-list {
