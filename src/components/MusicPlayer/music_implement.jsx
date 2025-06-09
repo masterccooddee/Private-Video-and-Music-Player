@@ -503,7 +503,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         );
     };
 
-    return { render, randomTracks, loadRandomTracks };
+    return { render, randomTracks, loadRandomTracks, setCurrentRandomIndex };
 };
 
 export default useMusicPlayer;

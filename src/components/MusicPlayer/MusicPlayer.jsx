@@ -46,13 +46,16 @@ const MusicPlayer = () => {
         window.scrollTo(0, 0);
     }, []);
 
-    const handleTrackClick = (track) => {
+    const handleTrackClick = (track, index) => {
         setCurrentTrack(track);
         const trackId = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
         setMusicid(trackId);
+        if (index !== undefined) {
+            setCurrentRandomIndex(index);
+        }
     };
     
-    const { render, randomTracks, loadRandomTracks } = useMusicPlayer(Musicid, currentTrack || musicData, musicData.episodes);
+    const { render, randomTracks, loadRandomTracks, setCurrentRandomIndex } = useMusicPlayer(Musicid, currentTrack || musicData, musicData.episodes);
 
     useEffect(() => {
         if (showRandomTracks && randomTracks.length === 0) {
@@ -73,7 +76,7 @@ const MusicPlayer = () => {
                                 <div 
                                     key={track.id} 
                                     className={`track-item ${currentTrack?.id === track.id ? 'active' : ''}`}
-                                    onClick={() => handleTrackClick(track)}
+                                    onClick={() => handleTrackClick(track, index)}
                                 >
                                     <div className="track-number">{index + 1}</div>
                                     <div className="track-info">
@@ -97,7 +100,7 @@ const MusicPlayer = () => {
                                 <div 
                                     key={track.id} 
                                     className={`track-item ${currentTrack?.id === track.id ? 'active' : ''}`}
-                                    onClick={() => handleTrackClick(track)}
+                                    onClick={() => handleTrackClick(track, index)}
                                 >
                                     <div className="track-number">{index + 1}</div>
                                     <div className="track-info">
