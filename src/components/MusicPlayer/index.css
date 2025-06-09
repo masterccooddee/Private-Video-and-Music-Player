@@ -123,7 +123,8 @@ body {
 .player-minimized .controls {
     display: flex;
     align-items: center;
-    justify-content: center;
+    /* justify-content: center; */
+    justify-content: flex-start;
     gap: 12px;
     flex: 0 0 auto;
 }
@@ -187,17 +188,18 @@ body {
     max-width: 1000px;
     display: flex;
     align-items: center;
+    /* justify-content: flex-start; */
     overflow: hidden;
 }
 
 .player-minimized .progress-bar {
-    height: 3px;
+    height: 4px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 1.5px;
 }
 
 .player-minimized .progress-bar:hover {
-    height: 4px;
+    height: 5px;
 }
 
 .player-minimized .progress-bar::before {
@@ -580,9 +582,10 @@ body {
     position: relative;
     overflow: hidden;
     white-space: nowrap;
-    width: 100%;
-    max-width: 90vw;
-    margin-left: auto;
+    /* width: 100%; */
+    width: calc(27ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
+    max-width: 50vw;
+    margin-left:0%;
     margin-right: auto;
     display: block;
 }
@@ -590,7 +593,7 @@ body {
 .player-fullscreen .name.marquee span,
 .player-minimized .name.marquee span {
     display: inline-block;
-    padding-left: 100%;
+    padding-left: 50%;
     animation: marquee 18s linear infinite;
     /* 速度放慢 */
 }
