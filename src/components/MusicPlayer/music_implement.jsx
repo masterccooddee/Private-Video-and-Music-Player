@@ -25,7 +25,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     const [marqueeReset, setMarqueeReset] = useState(false);
     const marqueeRef = useRef(null);
     const [randomTracks, setRandomTracks] = useState([]);
-    const [currentRandomIndex, setCurrentRandomIndex] = useState(0);
+    const [currentRandomIndex, setCurrentRandomIndex] = useState(-1);
     const [isRequesting, setIsRequesting] = useState(false);
     const requestTimeoutRef = useRef(null);
     const info = musicData?.info ? JSON.parse(musicData.info) : {};
@@ -156,7 +156,12 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 tracks = await loadRandomTracks();
             }
             if (tracks && tracks.length > 0) {
-                const nextIndex = (currentRandomIndex + 1) % tracks.length;
+                let nextIndex;
+                if (currentRandomIndex === -1) { // 如果是第一次從單曲切換到隨機播放
+                    nextIndex = 0; // 播放隨機列表的第一首歌
+                } else {
+                    nextIndex = (currentRandomIndex + 1) % tracks.length;
+                }
                 setCurrentRandomIndex(nextIndex);
                 const nextTrack = tracks[nextIndex];
                 if (nextTrack && nextTrack.id) {
@@ -189,7 +194,12 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 tracks = await loadRandomTracks();
             }
             if (tracks && tracks.length > 0) {
-                const prevIndex = (currentRandomIndex - 1 + tracks.length) % tracks.length;
+                let prevIndex;
+                if (currentRandomIndex === -1) { // 如果是第一次從單曲切換到隨機播放
+                    prevIndex = tracks.length - 1; // 播放隨機列表的最後一首歌
+                } else {
+                    prevIndex = (currentRandomIndex - 1 + tracks.length) % tracks.length;
+                }
                 setCurrentRandomIndex(prevIndex);
                 const prevTrack = tracks[prevIndex];
                 if (prevTrack && prevTrack.id) {
