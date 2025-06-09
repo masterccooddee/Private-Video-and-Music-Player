@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import useMusicPlayer from './music_implement.jsx';
 import './index.css';
@@ -35,7 +35,12 @@ const MusicPlayer = () => {
         }
         console.log('musicID:', Musicid);
         
+        
     }, [location]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     const handleTrackClick = (track) => {
         setCurrentTrack(track);

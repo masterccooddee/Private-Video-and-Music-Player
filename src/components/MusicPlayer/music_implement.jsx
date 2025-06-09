@@ -269,6 +269,18 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         };
     }, [track && track.name, fullscreen]);
 
+    useEffect(() => {
+        if (fullscreen) {
+            document.body.style.overflow = 'hidden';
+        }
+        else{
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [fullscreen]);
+
     const togglePlay = (e) => {
         e.stopPropagation();
         const audio = audioRef.current;
