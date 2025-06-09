@@ -28,6 +28,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     const [currentRandomIndex, setCurrentRandomIndex] = useState(-1);
     const [isRequesting, setIsRequesting] = useState(false);
     const requestTimeoutRef = useRef(null);
+    const spinnerTimeoutRef = useRef(null);
     const info = musicData?.info ? JSON.parse(musicData.info) : {};
 
     // 提取專輯封面主色調
@@ -92,8 +93,15 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         }
 
         setIsRequesting(true);
-        setIsLoading(true);
         setIsClosed(false);
+
+        // 立即隱藏任何現有的載入動畫
+        setIsLoading(false);
+
+        // 設定一個1秒的延遲來顯示載入動畫
+        spinnerTimeoutRef.current = setTimeout(() => {
+            setIsLoading(true);
+        }, 1000); // 1秒延遲
 
         try {
             const response = await fetch(`/music/music:${musicId}`);
@@ -125,7 +133,12 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
         } finally {
-            setIsLoading(false);
+            // 清除載入動畫計時器
+            if (spinnerTimeoutRef.current) {
+                clearTimeout(spinnerTimeoutRef.current);
+                spinnerTimeoutRef.current = null;
+            }
+            setIsLoading(false); // 確保載入完成後隱藏動畫
             // 添加延遲，防止請求過於頻繁
             setTimeout(() => {
                 setIsRequesting(false);
@@ -214,6 +227,18 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
             console.log('還沒有musicid');
             return;
         }
+
+        // 當 Musicid 變化時，尋找其在 trackList 中的索引並更新 currentTrackIndex
+        if (trackList && trackList.length > 0) {
+            const foundIndex = trackList.findIndex(track => {
+                const trackIdentifier = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
+                return trackIdentifier === Musicid;
+            });
+            if (foundIndex !== -1) {
+                setCurrentTrackIndex(foundIndex);
+            }
+        }
+
         playMusic(Musicid, musicData);
 
         return () => {
@@ -284,7 +309,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     }, [track && track.name, fullscreen]);
 
     useEffect(() => {
-        document.body.style.overflow = 'auto';
+        document.body.style.overflow = fullscreen ? 'hidden' : 'auto';
         return () => {
             document.body.style.overflow = 'auto';
         };
