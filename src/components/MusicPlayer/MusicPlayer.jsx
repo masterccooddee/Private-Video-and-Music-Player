@@ -89,7 +89,7 @@ const MusicPlayer = () => {
 
             {showRandomTracks && randomTracks.length > 0 && (
                 <div className="album-tracks">
-                    <h2 className="album-title">Random Music</h2>
+                    <h2 className="album-title">Music Recommendations</h2>
                     <div className="track-list">
                         {randomTracks.map((track, index) => {
                             const trackInfo = track.info ? JSON.parse(track.info) : {};
