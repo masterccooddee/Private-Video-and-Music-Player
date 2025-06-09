@@ -94,7 +94,6 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         setIsRequesting(true);
         setIsLoading(true);
         setIsClosed(false);
-        setFullscreen(false);
 
         try {
             const response = await fetch(`/music/music:${musicId}`);
@@ -130,7 +129,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
             // 添加延遲，防止請求過於頻繁
             setTimeout(() => {
                 setIsRequesting(false);
-            }, 1000);
+            }, 500);
         }
     };
 

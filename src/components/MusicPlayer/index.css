@@ -193,13 +193,14 @@ body {
 }
 
 .player-minimized .progress-bar {
-    height: 4px;
+    height: 3px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 1.5px;
 }
 
+.player-fullscreen .progress-bar:hover,
 .player-minimized .progress-bar:hover {
-    height: 5px;
+    height: 8px;
 }
 
 .player-minimized .progress-bar::before {
@@ -221,8 +222,9 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.player-fullscreen .volume-bar:hover,
 .player-minimized .volume-bar:hover {
-    height: 4px;
+    height: 8px;
 }
 
 .player-minimized .volume-bar::before {
