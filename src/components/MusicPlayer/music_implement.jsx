@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TbPlayerPlayFilled, TbPlayerPauseFilled,TbPlayerSkipBackFilled ,TbPlayerSkipForwardFilled } from "react-icons/tb";
+import { RiCloseFill } from "react-icons/ri";
 import './index.css';
 import default_Cover_Path from './ka3.jpg';
 
@@ -412,17 +414,18 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                         </div>
 
                         <div className="controls">
-                            <div className="control-button" onClick={handlePrevious}>⏮</div>
+                            <div className="control-button" onClick={handlePrevious}><TbPlayerSkipBackFilled /></div>
                             <div className="control-button play-pause-button" onClick={togglePlay}>
                                 {isPlaying ? (
-                                    '⏸'
+                                    <TbPlayerPauseFilled />
                                 ) : (
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <polygon points="6,4 20,12 6,20" fill="#fff" />
-                                    </svg>
+                                    // <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    //     <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                    // </svg>
+                                    <TbPlayerPlayFilled />
                                 )}
                             </div>
-                            <div className="control-button" onClick={handleNext}>⏭</div>
+                            <div className="control-button" onClick={handleNext}><TbPlayerSkipForwardFilled /></div>
                         </div>
 
                         <div className="progress-container">
@@ -439,7 +442,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                             <span className="volume-label">音量</span>
                             <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
                         </div>
-                        <div className="control-button close-btn" onClick={handleClose}>✖</div>
+                        <div className="control-button close-btn" onClick={handleClose}><RiCloseFill /></div>
                     </div>
                 )}
 
@@ -451,24 +454,25 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                             <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
                         </div>
                         <div className="controls fullscreen-controls">
-                            <div className="control-button" onClick={handlePrevious}>⏮</div>
+                            <div className="control-button" onClick={handlePrevious}><TbPlayerSkipBackFilled /></div>
                             <div className="control-button play-pause-button" onClick={togglePlay}>
                                 {isPlaying ? (
-                                    '⏸'
+                                    <TbPlayerPauseFilled />
                                 ) : (
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <polygon points="6,4 20,12 6,20" fill="#fff" />
-                                    </svg>
+                                    // <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    //     <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                    // </svg>
+                                    <TbPlayerPlayFilled />
                                 )}
                             </div>
-                            <div className="control-button" onClick={handleNext}>⏭</div>
+                            <div className="control-button" onClick={handleNext}><TbPlayerSkipForwardFilled /></div>
                         </div>
                         <div className="fullscreen-controls-bottom">
                             <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
                                 <span className="volume-label">音量</span>
                                 <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
                             </div>
-                            <div className="control-button close-btn" onClick={handleClose}>✖</div>
+                            <div className="control-button close-btn" onClick={handleClose}><RiCloseFill /></div>
                         </div>
                     </>
                 )}

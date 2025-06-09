@@ -45,7 +45,7 @@ body {
   max-width: 100%;
   box-sizing: border-box;
   height: clamp(48px, 8vh, 120px);
-  background: rgba(20, 20, 20, 0.95);
+  background: rgba(65, 65, 65, 0.95);
   backdrop-filter: blur(12px);
   padding: 8px 4px;
   display: flex;
@@ -224,7 +224,7 @@ body {
 
 .player-minimized .volume-label {
   font-size: 0.8rem;
-  color: #b0b0b0;
+  color: #fff;
 }
 
 .player-minimized .track-info-text {
@@ -247,7 +247,7 @@ body {
 
 .player-minimized .artist {
   font-size: 0.85rem;
-  color: #b0b0b0;
+  color:  #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -280,7 +280,7 @@ body {
 }
 
 .track-info-text .name {
-  color: #b0b0b0;
+  color: #fff;
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
@@ -288,7 +288,7 @@ body {
 
 .track-info-text .artist {
   font-size: 0.85rem;
-  color: #b0b0b0;
+  color: #fff;
   margin: 2px 0 0;
 }
 
@@ -392,7 +392,7 @@ body {
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #b0b0b0;
+  color: #fff;
   margin-top: 0px;
 }
 

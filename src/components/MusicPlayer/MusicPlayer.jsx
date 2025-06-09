@@ -61,7 +61,7 @@ const MusicPlayer = () => {
                                 >
                                     <div className="track-number">{index + 1}</div>
                                     <div className="track-info">
-                                        <div className="track-name">{trackInfo.title || track.name}</div>
+                                        <div className="track-name">{track.name || trackInfo.title}</div>
                                         <div className="track-artist">{trackInfo.artist || '未知歌手'}</div>
                                     </div>
                                 </div>
