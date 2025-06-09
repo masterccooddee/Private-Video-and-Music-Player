@@ -160,7 +160,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 setCurrentRandomIndex(nextIndex);
                 const nextTrack = tracks[nextIndex];
                 if (nextTrack && nextTrack.id) {
-                    await playMusic(nextTrack.id, nextTrack);
+                    const trackId = nextTrack.from_music_id ? `${nextTrack.from_music_id}-${nextTrack.id}` : nextTrack.id;
+                    await playMusic(trackId, nextTrack);
                 }
             }
         }
@@ -192,7 +193,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 setCurrentRandomIndex(prevIndex);
                 const prevTrack = tracks[prevIndex];
                 if (prevTrack && prevTrack.id) {
-                    await playMusic(prevTrack.id, prevTrack);
+                    const trackId = prevTrack.from_music_id ? `${prevTrack.from_music_id}-${prevTrack.id}` : prevTrack.id;
+                    await playMusic(trackId, prevTrack);
                 }
             }
         }
