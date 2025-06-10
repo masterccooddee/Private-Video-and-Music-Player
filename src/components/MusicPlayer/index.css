@@ -48,19 +48,18 @@ body {
     background: rgba(65, 65, 65, 0.95);
     backdrop-filter: blur(12px);
     padding: 8px 4px;
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 400px 184px 2fr auto;
+    gap: 32px;
     align-items: center;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
     animation: slide-up 0.4s ease-out;
     cursor: pointer;
     z-index: 1000;
-    justify-content: flex-start;
-    gap: 16px;
 }
 
 .player-minimized.active {
-    display: flex;
+    /* display: flex; */ /* 移除此行，确保 grid 布局生效 */
 }
 
 .player-minimized-left-section {
@@ -93,12 +92,12 @@ body {
 }
 
 .player-minimized .track-info {
+    grid-column: 1 / 2; /* 放置在第一列 */
     display: flex;
     align-items: center;
     height: 100%;
-    margin-right: 8px;
-    flex: 1 0 auto;
     overflow: hidden;
+    gap: 16px;
 }
 
 .player-minimized .img {
@@ -106,7 +105,6 @@ body {
     height: 48px;
     border-radius: 8px;
     object-fit: cover;
-    margin-right: 8px;
     border: 1px solid rgba(225, 29, 72, 0.3);
     transition: transform 0.3s ease;
 }
@@ -115,18 +113,12 @@ body {
     transform: scale(1.05);
 }
 
-.player-minimized .controls-container {
-    display: none;
-    /* Old container, hide it */
-}
-
 .player-minimized .controls {
+    grid-column: 2 / 3; /* 放置在第二列 */
     display: flex;
     align-items: center;
-    /* justify-content: center; */
-    justify-content: flex-start;
     gap: 12px;
-    flex: 0 0 auto;
+    justify-content: flex-start;
 }
 
 .player-minimized .control-button,
@@ -184,11 +176,11 @@ body {
 }
 
 .player-minimized .progress-container {
+    grid-column: 3 / 4; /* 放置在第三列 */
     flex: 1;
-    max-width: 1200px;
+    max-width: 1500px;
     display: flex;
     align-items: center;
-    /* justify-content: flex-start; */
     overflow: hidden;
 }
 
@@ -200,6 +192,7 @@ body {
 
 .player-fullscreen .progress-bar:hover,
 .player-minimized .progress-bar:hover {
+    /* border-radius: 1.5px; */
     height: 8px;
 }
 
@@ -208,6 +201,7 @@ body {
 }
 
 .player-minimized .volume-control {
+    grid-column: 4 / 5; /* 放置在第四列 */
     display: flex;
     align-items: center;
     gap: 6px;
@@ -218,7 +212,6 @@ body {
 .player-minimized .volume-bar {
     width: 60px;
     height: 3px;
-    /* padding: 0 20px 0 0; 上: 0, 右: 20px, 下: 0, 左: 0 */
     background: rgba(255, 255, 255, 0.1);
 }
 
@@ -241,7 +234,8 @@ body {
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
-    flex: 1 0 auto;
+    width: 180px;
+    flex-shrink: 0;
 }
 
 .player-minimized .name {
@@ -580,14 +574,24 @@ body {
     letter-spacing: 0.5px;
 }
 
-.player-fullscreen .name.marquee,
-.player-minimized .name.marquee {
+.player-fullscreen .name.marquee{
     position: relative;
     overflow: hidden;
     white-space: nowrap;
     /* width: 100%; */
     width: calc(27ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
     max-width: 50vw;
+    margin-left:0%;
+    margin-right: auto;
+    display: block;
+}
+.player-minimized .name.marquee {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    /* width: 100%; */
+    width: calc(27ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
+    max-width: 20vw;
     margin-left:0%;
     margin-right: auto;
     display: block;
@@ -631,12 +635,12 @@ body {
 }
 
 .player-minimized .right-controls {
+    grid-column: 4 / 5; /* 放置在第四列 */
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
     justify-content: flex-end;
-    flex: 0 0 auto;
-    margin-left: auto;
 }
 
 @media (max-width: 400px) {

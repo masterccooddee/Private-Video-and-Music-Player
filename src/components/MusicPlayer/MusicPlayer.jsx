@@ -100,7 +100,8 @@ const MusicPlayer = () => {
                             return (
                                 <div 
                                     key={track.id} 
-                                    className={`track-item ${currentTrack?.id === track.id ? 'active' : ''}`}
+                                    // className={`track-item ${currentTrack?.id === track.id ? 'active' : ''}`}
+                                    className={`track-item ${currentTrack && currentTrack.id === track.id && currentTrack.from_music_id === track.from_music_id ? 'active' : ''}`}
                                     onClick={() => handleTrackClick(track, index)}
                                 >
                                     <div className="track-number">{index + 1}</div>
