@@ -95,7 +95,16 @@ export default function HomePage() {
                     const imageUrl = item.poster ?? item.cover ?? '';
                     const hasImage = !!imageUrl;
                     // console.log('Rendering item:', item);
+
+                    const saveRecent = (item) => {
+                        const existing = JSON.parse(localStorage.getItem('recentlyWatched') || '[]');
+                        const filtered = existing.filter(i => i.id !== item.id || i.type !== item.type);
+                        const updated = [item, ...filtered].slice(0, 10); // 最多紀錄10筆
+                        localStorage.setItem('recentlyWatched', JSON.stringify(updated));
+                        };
+                    
                     const handleClick = () => {
+                        saveRecent(item);
                         if (type === 'video') {
                             navigate('/video', { state: { id: item.id, name: item.name } });
                         } else if (type === 'video_series') {
