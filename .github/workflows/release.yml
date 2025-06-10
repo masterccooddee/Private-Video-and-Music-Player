@@ -34,11 +34,11 @@ jobs:
         run: |
           xcopy Server MYFLIX\MultiMediaPlayer\Server /E /I /Q
           dir MYFLIX\MultiMediaPlayer\Server
-          Rename-Item MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
+          cp MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
 
       - name: 複製public到MultiMediaPlayer\public資料夾
         run: |
-          xcopy public MYFLIX\MultiMediaPlayer\public /E /I /Q
+          xcopy public MYFLIX\MultiMediaPlayer\public /E /I /Q /Y
           del MYFLIX\MultiMediaPlayer\public\index_mtest.html
           del MYFLIX\MultiMediaPlayer\public\index_vtest.html
           dir MYFLIX\MultiMediaPlayer\public
@@ -50,23 +50,23 @@ jobs:
 
       - name: dist裡的東西複製到public資料夾
         run: |
-          xcopy dist MYFLIX\MultiMediaPlayer\public /E /I /Q
+          xcopy dist MYFLIX\MultiMediaPlayer\public /E /I /Q /Y
           dir MYFLIX\MultiMediaPlayer\public
 
       - name: 移除所有套件
-        run: rmdir /S /Q node_modules
+        run: Remove-Item -Path node_modules -Recurse -Force
 
       - name: 只裝必要的套件
         run: npm install --only=prod
 
       - name: 複製node_modules
         run: |
-          xcopy node_modules MYFLIX\MultiMediaPlayer\node_modules /E /I /Q
+          xcopy node_modules MYFLIX\MultiMediaPlayer\node_modules /E /I /Q /Y   
           dir MYFLIX\MultiMediaPlayer
 
       - name: 壓縮MYFLIX資料夾
         run: |
-          powershell Compress-Archive -Path MYFLIX -DestinationPath MYFLIX.zip
+          Compress-Archive -Path MYFLIX -DestinationPath MYFLIX.zip
 
       - name: 上傳MYFLIX.zip
         uses: actions/upload-artifact@v4
