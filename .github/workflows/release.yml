@@ -54,7 +54,7 @@ jobs:
           dir MYFLIX\MultiMediaPlayer\public
 
       - name: 移除所有套件
-        run: rmdir /S /Q node_modules
+        run: Remove-Item -Path node_modules -Recurse -Force
 
       - name: 只裝必要的套件
         run: npm install --only=prod
@@ -66,7 +66,7 @@ jobs:
 
       - name: 壓縮MYFLIX資料夾
         run: |
-          powershell Compress-Archive -Path MYFLIX -DestinationPath MYFLIX.zip
+          Compress-Archive -Path MYFLIX -DestinationPath MYFLIX.zip
 
       - name: 上傳MYFLIX.zip
         uses: actions/upload-artifact@v4
