@@ -16,6 +16,8 @@ jobs:
             mkdir -p MYFLIX/Video
             mkdir -p MYFLIX/Music
             mkdir -p MYFLIX/MultiMediaPlayer
+            mkdir -p MYFLIX/MultiMediaPlayer/Server
+            mkdir -p MYFLIX/MultiMediaPlayer/public
             ls
 
       - name: npm install
