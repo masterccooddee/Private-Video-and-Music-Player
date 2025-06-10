@@ -1,32 +1,31 @@
-# Private-Video-and-Music-Player
+# MYFLIX
 
 
-# 影音資料庫前端（React + Vite）
-
-本專案為一個影音撥放器，並使用 React 搭配 Vite 建立的影音資料庫前端介面
-
----
-
-## 🚀 快速啟動
-
-### 1️⃣ 安裝相關套件
-```bash
-npm install
-```
-
-### 2️⃣ 啟動開發伺服器
-```bash
-npm run dev
-```
-
-### 3️⃣ 打開瀏覽器
-開啟瀏覽器並前往：
-```
-http://localhost:5173
-```
+# 如何使用
 ## Requirement
+- NodeJS   [官網](https://nodejs.org/en)
 - Redis    [安裝方法-設定中的REDIS_HOST](#設定)
 - FFmpeg   [安裝方法](https://vocus.cc/article/64701a2cfd897800014daed0)
+  
+## 開啟步驟
+### **方法一** (直接使用release) :
+1. [下載](https://github.com/masterccooddee/Private-Video-and-Music-Player/releases)***MYFLIX.zip***並解壓縮
+2. 放入你的影片、音樂到Video和Music
+3. 到 *MYFLIX/MultiMediaPlayer/Server/.env* 加入你的TMDB API KEY
+4. 使用terminal或直接點擊**server_start.bat**執行
+5. 如果有***更換***Video或Music資料夾中的任何內容，請**重開**Server，請確認Redis裡面資料有沒有刪乾淨 ([Redis insight](https://redis.io/insight/)可以查看Redis server內容，使用flushall把所有東西刪除)
+### **方法二** :
+1. 直接clone整個專案
+2. 照下方的**路徑結構**把檔案放好
+3. 到 */Server* 把.env.example改成.env
+4. 在.env裡加入你的TMDB API KEY
+5. 放入你的影片、音樂到Video和Music
+6. 啟動Redis
+7. 使用 server_start.bat 或 server_start_quick.bat 開始Server 
+8. 如果有***更換***Video或Music資料夾中的任何內容，請**重開**Server，請確認Redis裡面資料有沒有刪乾淨 ([Redis insight](https://redis.io/insight/)可以查看Redis server內容，使用flushall把所有東西刪除)
+
+>[!WARNING]
+>兩種方法都須確定你的**NodeJS**和**FFmpeg**都已安裝完成，以免產生問題，方法二確認**Redis**已安裝且開啟
 ## 路徑結構
 ```
 📂Upper folder   
