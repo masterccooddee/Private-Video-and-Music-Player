@@ -10,6 +10,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: 建立MYFLIX、並加入Video, Music, MultiMediaPlayer資料夾
         run: |
@@ -30,7 +34,7 @@ jobs:
         run: |
           xcopy Server MYFLIX\MultiMediaPlayer\Server /E /I /Q
           dir MYFLIX\MultiMediaPlayer\Server
-          copy MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
+          rename MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
 
       - name: 複製public到MultiMediaPlayer\public資料夾
         run: |
@@ -41,7 +45,7 @@ jobs:
 
       - name: 複製icons到MultiMediaPlayer\public\icons資料夾
         run: |
-          xcopy icons MYFLIX\MultiMediaPlayer\public\icons /E /I /Q
+          xcopy icons MYFLIX\MultiMediaPlayer\public\icons /E /Y
           dir MYFLIX\MultiMediaPlayer\public\icons
 
       - name: dist裡的東西複製到public資料夾
