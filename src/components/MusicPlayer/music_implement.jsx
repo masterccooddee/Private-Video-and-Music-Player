@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TbPlayerPlayFilled, TbPlayerPauseFilled,TbPlayerSkipBackFilled ,TbPlayerSkipForwardFilled } from "react-icons/tb";
+import { RiCloseFill } from "react-icons/ri";
 import './index.css';
 import default_Cover_Path from './ka3.jpg';
 
-const useMusicPlayer = (Musicid,musicData, trackList = []) => {
+const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     const audioRef = useRef(new Audio());
     const containerRef = useRef(null);
     const progressBarRef = useRef(null);
@@ -22,6 +24,12 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
     const [marqueeOffset, setMarqueeOffset] = useState(0);
     const [marqueeReset, setMarqueeReset] = useState(false);
     const marqueeRef = useRef(null);
+    const [randomTracks, setRandomTracks] = useState([]);
+    const [currentRandomIndex, setCurrentRandomIndex] = useState(-1);
+    const [isRequesting, setIsRequesting] = useState(false);
+    const requestTimeoutRef = useRef(null);
+    const spinnerTimeoutRef = useRef(null);
+    const info = musicData?.info ? JSON.parse(musicData.info) : {};
 
     // 提取專輯封面主色調
     const extractColor = (imgSrc) => {
@@ -49,28 +57,177 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         };
     };
 
-    const loadTrack = (index) => {
-        setIsLoading(true);
-        const data = trackList[index] || {};
+    // 載入隨機音樂列表
+    const loadRandomTracks = async () => {
+        if (isRequesting) return randomTracks;
         
-        const trackData = {
-            Musicid,
-            name: musicData.name || `Song ${Musicid}`,
-            artist: data.artist || '未知歌手',
-            music_url: data.music_url,
-            cover_url: data.cover_url || '/assets/default-cover.jpg',
-        };
-        console.log('htherherherh:');
-        setTrack(trackData);
-        audioRef.current.src = trackData.music_url;
-        audioRef.current.load();
-        audioRef.current.volume = volume;
-        setProgress(0);
-        setIsPlaying(true);
-        audioRef.current.play().catch(err => setError('播放失敗。'));
-        extractColor(trackData.cover_url);
-        setCurrentTrackIndex(index);
+        setIsRequesting(true);
+        try {
+            const response = await fetch('/random_music');
+            if (!response.ok) {
+                throw new Error(`載入錯誤: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log("random_music:", data);
+            setRandomTracks(data);
+            return data;
+        } catch (err) {
+            console.error('載入失敗:', err.message);
+            setError('無法載入音樂。');
+            return randomTracks;
+        } finally {
+            setIsRequesting(false);
+        }
+    };
+
+    // 播放指定音樂
+    const playMusic = async (musicId, musicData) => {
+        if (!musicId || !musicData) {
+            console.error('無效的音樂ID或數據');
+            return;
+        }
+
+        if (isRequesting) {
+            console.log('正在處理其他請求，請稍候...');
+            return;
+        }
+
+        setIsRequesting(true);
+        setIsClosed(false);
+
+        // 立即隱藏任何現有的載入動畫
         setIsLoading(false);
+
+        // 設定一個1秒的延遲來顯示載入動畫
+        spinnerTimeoutRef.current = setTimeout(() => {
+            setIsLoading(true);
+        }, 1000); // 1秒延遲
+
+        try {
+            const response = await fetch(`/music/music:${musicId}`);
+            console.log("音樂數據musicId:", musicId);
+            if (!response.ok) {
+                throw new Error(`載入錯誤: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log("音樂數據:", data);
+            const trackData = {
+                Musicid: musicId,
+                name: musicData.name || `Song ${musicId}`,
+                artist: musicData.info ? JSON.parse(musicData.info).artist || '未知歌手' : '未知歌手',
+                music_url: data.music_url,
+                cover_url: data.cover_url || default_Cover_Path,
+            };
+            setTrack(trackData);
+            audioRef.current.src = trackData.music_url;
+            audioRef.current.volume = volume;
+            extractColor(trackData.cover_url);
+            setIsPlaying(true);
+            await audioRef.current.play();
+            setError(null);
+        } catch (err) {
+            console.error('播放失敗:', err);
+            setError('播放失敗。');
+            // 如果是伺服器錯誤，等待一段時間後重試
+            if (err.message.includes('500')) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        } finally {
+            // 清除載入動畫計時器
+            if (spinnerTimeoutRef.current) {
+                clearTimeout(spinnerTimeoutRef.current);
+                spinnerTimeoutRef.current = null;
+            }
+            setIsLoading(false); // 確保載入完成後隱藏動畫
+            // 添加延遲，防止請求過於頻繁
+            setTimeout(() => {
+                setIsRequesting(false);
+            }, 500);
+        }
+    };
+
+    // 處理下一首
+    const handleNext = async (e) => {
+        e.stopPropagation();
+        if (isRequesting) {
+            console.log('正在處理其他請求，請稍候...');
+            return;
+        }
+
+        if (trackList && trackList.length > 0) {
+            // 專輯內切換
+            const nextIndex = (currentTrackIndex + 1) % trackList.length;
+            document.querySelector('.track-item.active')?.classList.remove('active');
+            document.querySelector(`.track-item:nth-child(${nextIndex+1})`)?.classList.add('active');
+            setCurrentTrackIndex(nextIndex);
+            const nextTrack = trackList[nextIndex];
+            const trackId = `${nextTrack.from_music_id}-${nextTrack.id}`;
+            await playMusic(trackId, nextTrack);
+        } else {
+            // 隨機音樂切換
+            let tracks = randomTracks;
+            if (tracks.length === 0) {
+                tracks = await loadRandomTracks();
+            }
+            if (tracks && tracks.length > 0) {
+                let nextIndex;
+                if (currentRandomIndex === -1) { // 如果是第一次從單曲切換到隨機播放
+                    nextIndex = 0; // 播放隨機列表的第一首歌
+                } else {
+                    nextIndex = (currentRandomIndex + 1) % tracks.length;
+                }
+                document.querySelector('.track-item.active')?.classList.remove('active');
+                document.querySelector(`.track-item:nth-child(${nextIndex + 1})`)?.classList.add('active');
+                setCurrentRandomIndex(nextIndex);
+                const nextTrack = tracks[nextIndex];
+                if (nextTrack && nextTrack.id) {
+                    const trackId = nextTrack.from_music_id ? `${nextTrack.from_music_id}-${nextTrack.id}` : nextTrack.id;
+                    await playMusic(trackId, nextTrack);
+                }
+            }
+        }
+    };
+
+    // 處理上一首
+    const handlePrevious = async (e) => {
+        e.stopPropagation();
+        if (isRequesting) {
+            console.log('正在處理其他請求，請稍候...');
+            return;
+        }
+
+        if (trackList && trackList.length > 0) {
+            // 專輯內切換
+            const prevIndex = (currentTrackIndex - 1 + trackList.length) % trackList.length;
+            document.querySelector('.track-item.active')?.classList.remove('active');
+            document.querySelector(`.track-item:nth-child(${prevIndex + 1})`)?.classList.add('active');
+            setCurrentTrackIndex(prevIndex);
+            const prevTrack = trackList[prevIndex];
+            const trackId = `${prevTrack.from_music_id}-${prevTrack.id}`;
+            await playMusic(trackId, prevTrack);
+        } else {
+            // 隨機音樂切換
+            let tracks = randomTracks;
+            if (tracks.length === 0) {
+                tracks = await loadRandomTracks();
+            }
+            if (tracks && tracks.length > 0) {
+                let prevIndex;
+                if (currentRandomIndex === -1) { // 如果是第一次從單曲切換到隨機播放
+                    prevIndex = tracks.length - 1; // 播放隨機列表的最後一首歌
+                } else {
+                    prevIndex = (currentRandomIndex - 1 + tracks.length) % tracks.length;
+                }
+                document.querySelector('.track-item.active')?.classList.remove('active');
+                document.querySelector(`.track-item:nth-child(${prevIndex + 1})`)?.classList.add('active');
+                setCurrentRandomIndex(prevIndex);
+                const prevTrack = tracks[prevIndex];
+                if (prevTrack && prevTrack.id) {
+                    const trackId = prevTrack.from_music_id ? `${prevTrack.from_music_id}-${prevTrack.id}` : prevTrack.id;
+                    await playMusic(trackId, prevTrack);
+                }
+            }
+        }
     };
 
     useEffect(() => {
@@ -78,43 +235,27 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
             console.log('還沒有musicid');
             return;
         }
-        setIsLoading(true);
-        fetch(`/music/music:${Musicid}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`載入錯誤: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(window.location.pathname);
-                console.log(default_Cover_Path);
-                console.log("HADADIAJDIAJDIJ: ",data);
-                const trackData = {
-                    Musicid,
-                    name: musicData.name || `Song ${Musicid}`,
-                    artist: data.artist || '未知歌手',
-                    music_url: data.music_url,
-                    cover_url: data.cover_url || default_Cover_Path,
-                };
-                setTrack(trackData);
-                audioRef.current.src = trackData.music_url;
-                audioRef.current.volume = volume;
-                extractColor(trackData.cover_url);
-                setIsPlaying(true);
-                audioRef.current.play().catch(err => setError('播放失敗。'));
-                setError(null);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                console.error('載入失敗:', err.message);
-                setError('無法載入音樂。');
-                setIsLoading(false);
+
+        // 當 Musicid 變化時，尋找其在 trackList 中的索引並更新 currentTrackIndex
+        if (trackList && trackList.length > 0) {
+            const foundIndex = trackList.findIndex(track => {
+                const trackIdentifier = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
+                return trackIdentifier === Musicid;
             });
+            if (foundIndex !== -1) {
+                setCurrentTrackIndex(foundIndex);
+            }
+        }
+
+        playMusic(Musicid, musicData);
 
         return () => {
             audioRef.current.pause();
             audioRef.current.src = '';
+            if (requestTimeoutRef.current) {
+                clearTimeout(requestTimeoutRef.current);
+            }
+            document.body.style.overflow = 'auto';
         };
     }, [Musicid]);
 
@@ -175,6 +316,13 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         };
     }, [track && track.name, fullscreen]);
 
+    useEffect(() => {
+        document.body.style.overflow = fullscreen ? 'hidden' : 'auto';
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, [fullscreen]);
+
     const togglePlay = (e) => {
         e.stopPropagation();
         const audio = audioRef.current;
@@ -185,22 +333,6 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
             audio.play().catch(err => setError('播放失敗。'));
         }
         setIsPlaying(!isPlaying);
-    };
-
-    const handleNext = (e) => {
-        e.stopPropagation();
-        if (trackList.length > 0) {
-            const nextIndex = (currentTrackIndex + 1) % trackList.length;
-            loadTrack(nextIndex);
-        }
-    };
-
-    const handlePrevious = (e) => {
-        e.stopPropagation();
-        if (trackList.length > 0) {
-            const prevIndex = (currentTrackIndex - 1 + trackList.length) % trackList.length;
-            loadTrack(prevIndex);
-        }
     };
 
     const handleProgressDrag = (e) => {
@@ -259,6 +391,7 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         audioRef.current.pause();
         audioRef.current.src = '';
         setIsClosed(true);
+        setFullscreen(false);
     };
 
     const toggleFullscreen = () => setFullscreen(!fullscreen);
@@ -326,55 +459,48 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
                 )}
                 {/* 在最小化模式下保持原來的 .track-info 結構 */}
                 {!fullscreen && (
-                    <div className="track-info">
-                        <img className="img" src={track.cover_url} alt="專輯封面" />
-                        <div className="track-info-text">
-                            {nameNode}
-                            <div className="artist">{track.artist}</div>
+                    <>
+                        <div className="track-info">
+                            <img className="img" src={track.cover_url} alt="專輯封面" />
+                            <div className="track-info-text">
+                                {nameNode}
+                                <div className="artist">{track.artist}</div>
+                            </div>
                         </div>
+
+                        <div className="controls">
+                            <div className="control-button" onClick={handlePrevious}><TbPlayerSkipBackFilled /></div>
+                            <div className="control-button play-pause-button" onClick={togglePlay}>
+                                {isPlaying ? (
+                                    <TbPlayerPauseFilled />
+                                ) : (
+                                    // <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    //     <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                    // </svg>
+                                    <TbPlayerPlayFilled />
+                                )}
+                            </div>
+                            <div className="control-button" onClick={handleNext}><TbPlayerSkipForwardFilled /></div>
+                        </div>
+
+                        <div className="progress-container">
+                            <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
+                            <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
+                            <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
+                        </div>
+                    </>
+                )}
+
+                {!fullscreen && (
+                    <div className="right-controls">
+                        <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
+                            <span className="volume-label">音量</span>
+                            <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
+                        </div>
+                        <div className="control-button close-btn" onClick={handleClose}><RiCloseFill /></div>
                     </div>
                 )}
 
-                {/* 文字資訊部分，在全螢幕模式下放在圖片下方 */}
-                {/* {fullscreen && (
-                    <div className="track-info-text">
-                        {nameNode}
-                        <div className="artist">{track.artist}</div>
-                    </div>
-                )} */}
-
-                {/* 控制項容器 */}
-                <div className="controls-container">
-                    {!fullscreen && (
-                        <>
-                            <div className="controls">
-                                <div className="control-button" onClick={handlePrevious}>⏮</div>
-                                <div className="control-button play-pause-button" onClick={togglePlay}>
-                                    {isPlaying ? (
-                                        '⏸'
-                                    ) : (
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <polygon points="6,4 20,12 6,20" fill="#fff" />
-                                        </svg>
-                                    )}
-                                </div>
-                                <div className="control-button" onClick={handleNext}>⏭</div>
-                            </div>
-
-                            <div className="progress-container">
-                                <span className="progress-time" style={{marginRight: 8}}>{formatTime(audioRef.current.currentTime || 0)}</span>
-                                <div className="progress-bar" ref={progressBarRef} onMouseDown={handleMouseDownProgress} style={{ '--progress': `${progress}%` }}></div>
-                                <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
-                            </div>
-
-                            <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
-                                <span className="volume-label">音量</span>
-                                <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
-                            </div>
-                            <div className="control-button close-btn" onClick={handleClose}>✖</div>
-                        </>
-                    )}
-                </div>
                 {fullscreen && (
                     <>
                         <div className="progress-container">
@@ -383,24 +509,25 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
                             <span className="progress-time" style={{marginLeft: 8}}>{formatTime(audioRef.current.duration || 0)}</span>
                         </div>
                         <div className="controls fullscreen-controls">
-                            <div className="control-button" onClick={handlePrevious}>⏮</div>
+                            <div className="control-button" onClick={handlePrevious}><TbPlayerSkipBackFilled /></div>
                             <div className="control-button play-pause-button" onClick={togglePlay}>
                                 {isPlaying ? (
-                                    '⏸'
+                                    <TbPlayerPauseFilled />
                                 ) : (
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <polygon points="6,4 20,12 6,20" fill="#fff" />
-                                    </svg>
+                                    // <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    //     <polygon points="6,4 20,12 6,20" fill="#fff" />
+                                    // </svg>
+                                    <TbPlayerPlayFilled />
                                 )}
                             </div>
-                            <div className="control-button" onClick={handleNext}>⏭</div>
+                            <div className="control-button" onClick={handleNext}><TbPlayerSkipForwardFilled /></div>
                         </div>
                         <div className="fullscreen-controls-bottom">
                             <div className="volume-control" onMouseMove={handleMouseMoveVolume} onMouseDown={handleMouseDownVolume}>
                                 <span className="volume-label">音量</span>
                                 <div className="volume-bar" ref={volumeBarRef} style={{ '--volume': `${volume * 100}%` }}></div>
                             </div>
-                            <div className="control-button close-btn" onClick={handleClose}>✖</div>
+                            <div className="control-button close-btn" onClick={handleClose}><RiCloseFill /></div>
                         </div>
                     </>
                 )}
@@ -408,7 +535,7 @@ const useMusicPlayer = (Musicid,musicData, trackList = []) => {
         );
     };
 
-    return { render };
+    return { render, randomTracks, loadRandomTracks, setCurrentRandomIndex };
 };
 
 export default useMusicPlayer;

@@ -2,6 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TabView, TabPanel } from 'primereact/tabview';
 import VideoJS from './VideoJS';
+import { TailChase } from 'ldrs/react'
+import 'ldrs/react/TailChase.css'
+import './VideoPlayer.css';
+
+// Default values shown
+
+
 const VideoPlayer = () => {
     const location = useLocation();
     const videoData = location.state || {};
@@ -15,7 +22,7 @@ const VideoPlayer = () => {
     else{
         videoID = String(videoData.id)
     }
-    console.log('videoID in VideoPlayer:', videoID);
+    //console.log('videoID in VideoPlayer:', videoID);
   let videooptions = {
     controls: true,
     autoplay: false,
@@ -105,55 +112,42 @@ const VideoPlayer = () => {
             episodesBySeason[season].push(ep);
         });
     }
+    const isDarkMode = document.body.classList.contains('dark-mode');
 
     return (
-      <div style={{ padding: '24px', textAlign:'left', position: 'relative', width: '100%' }}>
-          <h2>{videoData?.name || '影片播放器'}</h2>
+      <div className="vp-root">
+        <h2 className="vp-title">{videoData?.name || '影片播放器'}</h2>
           {isLoading ? (
-            <div>
-              <p>Loading...</p>
-            </div>
+          <div className="vp-loading">
+            <TailChase size= "100" speed="1.75" color="white" />
+          </div>
           ) : (
-            <VideoJS options={options}/>
+           <VideoJS options={options}/>
           )}
-
-          <TabView>
-              {Object.keys(episodesBySeason).sort().map(season => (
-                  <TabPanel header={season} key={season}>
-                      <div style={{
-                        textAlign: 'left',
-                        marginTop: 24,
-                        marginBottom: 24,
-                        gap: '12px',
-                        display: 'flex',
-                        flexWrap: 'wrap'
-                      }}>
-                          {episodesBySeason[season].map((ep, idx) => (
-                              <button
-                                key={ep.id}
-                                onClick={() =>
-                                  handleChangeVideo(String(videoData.id) + '-' + String(ep.id), ep.id)
-                                }
-                                style={{
-                                  margin: '0 12px',
-                                  width: '80px',
-                                  height: '40px',
-                                  display: 'inline-block',
-                                  fontSize: '16px',
-                                  background: currentEpId === ep.id ? '#1976d2' : '',
-                                  color: currentEpId === ep.id ? '#fff' : '',
-                                  border: currentEpId === ep.id ? '2px solid #1976d2' : ''
-                                }}
-                              >
-                                {ep.name || String(idx + 1)}
-                              </button>
-                          ))}
-                      </div>
-                  </TabPanel>
-              ))}
-          </TabView>
+    
+        <TabView>
+          {Object.keys(episodesBySeason).sort().map(season => (
+            <TabPanel header={season} key={season}>
+              <div className="vp-episodes-panel">
+                {episodesBySeason[season].map((ep, idx) => (
+                  <button
+                    key={ep.id}
+                    onClick={() =>
+                      handleChangeVideo(String(videoData.id) + '-' + String(ep.id), ep.id)
+                    }
+                    className={
+                      "vp-episode-btn" + (currentEpId === ep.id ? " active" : "")
+                    }
+                  >
+                    {ep.name || String(idx + 1)}
+                  </button>
+                ))}
+              </div>
+            </TabPanel>
+          ))}
+        </TabView>
       </div>
-  );
+    );
 };
 
 export default VideoPlayer;
