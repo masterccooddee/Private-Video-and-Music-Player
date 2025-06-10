@@ -38,7 +38,7 @@ jobs:
 
       - name: 複製public到MultiMediaPlayer\public資料夾
         run: |
-          xcopy public MYFLIX\MultiMediaPlayer\public /E /I /Q
+          xcopy public MYFLIX\MultiMediaPlayer\public /E /I /Q /Y
           del MYFLIX\MultiMediaPlayer\public\index_mtest.html
           del MYFLIX\MultiMediaPlayer\public\index_vtest.html
           dir MYFLIX\MultiMediaPlayer\public
