@@ -34,6 +34,8 @@ jobs:
       - name: 複製public到MultiMediaPlayer/public資料夾
         run: |
             cp -r public/* MYFLIX/MultiMediaPlayer/public
+            rm MYFLIX/MultiMediaPlayer/public/index_mtest.html
+            rm MYFLIX/MultiMediaPlayer/public/index_vtest.html
             ls MYFLIX/MultiMediaPlayer/public
 
       - name: 複製icons到MultiMediaPlayer/public/icons資料夾
@@ -46,8 +48,8 @@ jobs:
             cp -r dist/* MYFLIX/MultiMediaPlayer/public
             ls MYFLIX/MultiMediaPlayer/public
 
-      - name: npm uninstall
-        run: npm uninstall
+      - name: 移除所有套件
+        run: rm -rf node_modules
 
       - name: 只裝必要的套件
         run: npm install --only=prod
@@ -55,6 +57,7 @@ jobs:
       - name: 複製node_modules
         run: |
             cp -r node_modules MYFLIX/MultiMediaPlayer
-            ls MYFLIX/MultiMediaPlayer/node_modules
+            ls MYFLIX/MultiMediaPlayer
+            
 
             
