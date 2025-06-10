@@ -486,7 +486,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
 
         // 處理歌名顯示方式
         let nameNode;
-        if (track.name.length > 27) {
+        if (track.name.length > 20) {
             nameNode = (
                 <div
                     className={`name marquee${fullscreen ? ' fullscreen' : ' minimized'}`}

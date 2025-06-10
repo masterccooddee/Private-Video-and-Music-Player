@@ -575,7 +575,7 @@ body {
     overflow: hidden;
     white-space: nowrap;
     /* width: 100%; */
-    width: calc(27ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
+    width: calc(25ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
     max-width: 50vw;
     margin-left:0%;
     margin-right: auto;
@@ -585,7 +585,8 @@ body {
     position: relative;
     overflow: hidden;
     white-space: nowrap;
-    width: 100%;
+    /* width: 100%; */
+    width: calc(25ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
     max-width: none;
     margin: 0;
     display: block;
