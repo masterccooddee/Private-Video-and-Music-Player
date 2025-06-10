@@ -50,7 +50,7 @@ jobs:
 
       - name: dist裡的東西複製到public資料夾
         run: |
-          xcopy dist MYFLIX\MultiMediaPlayer\public /E /I /Q
+          xcopy dist MYFLIX\MultiMediaPlayer\public /E /I /Q /Y
           dir MYFLIX\MultiMediaPlayer\public
 
       - name: 移除所有套件
@@ -61,7 +61,7 @@ jobs:
 
       - name: 複製node_modules
         run: |
-          xcopy node_modules MYFLIX\MultiMediaPlayer\node_modules /E /I /Q
+          xcopy node_modules MYFLIX\MultiMediaPlayer\node_modules /E /I /Q /Y   
           dir MYFLIX\MultiMediaPlayer
 
       - name: 壓縮MYFLIX資料夾
