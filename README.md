@@ -1,4 +1,4 @@
-# Private-Video-and-Music-Player
+# MYFLIX
 
 
 # 如何使用
@@ -17,13 +17,12 @@
 ### **方法二** :
 1. 直接clone整個專案
 2. 照下方的**路徑結構**把檔案放好
-3. 放入你的影片、音樂到Video和Music
-4. 到 */Server* 把.env.example改成.env
-5. 在.env裡加入你的TMDB API KEY
-6. 放入你的影片、音樂到Video和Music
-7. 啟動Redis
-8. 使用 server_start.bat 或 server_start_quick.bat 開始Server 
-9. 如果有***更換***Video或Music資料夾中的任何內容，請**重開**Server，請確認Redis裡面資料有沒有刪乾淨 ([Redis insight](https://redis.io/insight/)可以查看Redis server內容，使用flushall把所有東西刪除)
+3. 到 */Server* 把.env.example改成.env
+4. 在.env裡加入你的TMDB API KEY
+5. 放入你的影片、音樂到Video和Music
+6. 啟動Redis
+7. 使用 server_start.bat 或 server_start_quick.bat 開始Server 
+8. 如果有***更換***Video或Music資料夾中的任何內容，請**重開**Server，請確認Redis裡面資料有沒有刪乾淨 ([Redis insight](https://redis.io/insight/)可以查看Redis server內容，使用flushall把所有東西刪除)
 
 >[!WARNING]
 >兩種方法都須確定你的**NodeJS**和**FFmpeg**都已安裝完成，以免產生問題，方法二確認**Redis**已安裝且開啟
