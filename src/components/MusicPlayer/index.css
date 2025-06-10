@@ -49,8 +49,8 @@ body {
     backdrop-filter: blur(12px);
     padding: 8px 4px;
     display: grid;
-    grid-template-columns: 400px 184px 2fr auto;
-    gap: 32px;
+    grid-template-columns: minmax(200px, 1fr) auto 1fr auto;
+    gap: 16px;
     align-items: center;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
     animation: slide-up 0.4s ease-out;
@@ -59,7 +59,7 @@ body {
 }
 
 .player-minimized.active {
-    /* display: flex; */ /* 移除此行，确保 grid 布局生效 */
+    display: flex;
 }
 
 .player-minimized-left-section {
@@ -92,12 +92,11 @@ body {
 }
 
 .player-minimized .track-info {
-    grid-column: 1 / 2; /* 放置在第一列 */
     display: flex;
     align-items: center;
-    height: 100%;
-    overflow: hidden;
-    gap: 16px;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
 }
 
 .player-minimized .img {
@@ -142,8 +141,7 @@ body {
 
 .player-minimized .control-button:hover,
 .player-minimized .play-pause-button:hover,
-.player-fullscreen .control-button:hover,
-.player-fullscreen .play-pause-button:hover {
+.player-fullscreen .control-button:hover{
     transform: scale(1.05);
     color: #fff;
     background: transparent;
@@ -160,6 +158,7 @@ body {
     justify-content: center;
 }
 
+.player-fullscreen .play-pause-button:hover,
 .player-minimized .play-pause-button:hover {
     background: #f43f5e;
     color: #fff;
@@ -230,12 +229,8 @@ body {
 }
 
 .player-minimized .track-info-text {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    width: 180px;
-    flex-shrink: 0;
+    min-width: 0;
+    flex: 1;
 }
 
 .player-minimized .name {
@@ -244,8 +239,9 @@ body {
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
-    word-break: normal;
+    text-overflow: ellipsis;
     display: block;
+    width: 100%;
 }
 
 .player-minimized .artist {
@@ -589,11 +585,9 @@ body {
     position: relative;
     overflow: hidden;
     white-space: nowrap;
-    /* width: 100%; */
-    width: calc(27ch + 8px); /* 固定27個字元寬度，略加padding避免截斷 */
-    max-width: 20vw;
-    margin-left:0%;
-    margin-right: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
     display: block;
 }
 
