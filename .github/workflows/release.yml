@@ -1,0 +1,75 @@
+name: 打包上傳
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 建立MYFLIX、並加入Video, Music, MultiMediaPlayer資料夾
+        run: |
+          mkdir MYFLIX\Video
+          mkdir MYFLIX\Music
+          mkdir MYFLIX\MultiMediaPlayer
+          mkdir MYFLIX\MultiMediaPlayer\Server
+          mkdir MYFLIX\MultiMediaPlayer\public
+          ls
+
+      - name: npm install
+        run: npm install
+
+      - name: npm run build
+        run: npm run build
+
+      - name: 複製Server到MultiMediaPlayer\Server資料夾
+        run: |
+          xcopy Server MYFLIX\MultiMediaPlayer\Server /E /I /Q
+          dir MYFLIX\MultiMediaPlayer\Server
+          cp MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
+
+      - name: 複製public到MultiMediaPlayer\public資料夾
+        run: |
+          xcopy public MYFLIX\MultiMediaPlayer\public /E /I /Q /Y
+          del MYFLIX\MultiMediaPlayer\public\index_mtest.html
+          del MYFLIX\MultiMediaPlayer\public\index_vtest.html
+          dir MYFLIX\MultiMediaPlayer\public
+
+      - name: 複製icons到MultiMediaPlayer\public\icons資料夾
+        run: |
+          xcopy icons MYFLIX\MultiMediaPlayer\public\icons /E /Y
+          dir MYFLIX\MultiMediaPlayer\public\icons
+
+      - name: dist裡的東西複製到public資料夾
+        run: |
+          xcopy dist MYFLIX\MultiMediaPlayer\public /E /I /Q /Y
+          dir MYFLIX\MultiMediaPlayer\public
+
+      - name: 移除所有套件
+        run: Remove-Item -Path node_modules -Recurse -Force
+
+      - name: 只裝必要的套件
+        run: npm install --only=prod
+
+      - name: 複製node_modules
+        run: |
+          xcopy node_modules MYFLIX\MultiMediaPlayer\node_modules /E /I /Q /Y   
+          dir MYFLIX\MultiMediaPlayer
+
+      - name: 壓縮MYFLIX資料夾
+        run: |
+          Compress-Archive -Path MYFLIX -DestinationPath MYFLIX.zip
+
+      - name: 上傳MYFLIX.zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: MYFLIX
+          path: MYFLIX.zip
