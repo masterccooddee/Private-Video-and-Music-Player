@@ -58,6 +58,16 @@ jobs:
         run: |
             cp -r node_modules MYFLIX/MultiMediaPlayer
             ls MYFLIX/MultiMediaPlayer
+
+      - name: 壓縮MYFLIX資料夾
+        run: |
+            zip -r MYFLIX.zip MYFLIX
+    
+      - name: 上傳MYFLIX.zip
+        uses: actions/upload-artifact@v4
+        with:
+            name: MYFLIX
+            path: MYFLIX.zip      
             
 
             
