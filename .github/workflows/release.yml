@@ -34,7 +34,7 @@ jobs:
         run: |
           xcopy Server MYFLIX\MultiMediaPlayer\Server /E /I /Q
           dir MYFLIX\MultiMediaPlayer\Server
-          Rename-Item MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
+          cp MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
 
       - name: 複製public到MultiMediaPlayer\public資料夾
         run: |
