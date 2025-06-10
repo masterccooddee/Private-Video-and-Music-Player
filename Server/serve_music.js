@@ -1,6 +1,5 @@
-import fs from 'fs/promises';
 import path from 'path';
-import { convertAudio } from './audio_converter.js';
+import { checkAudioSupport } from './audio_converter.js';
 import {
     MusicExpireTime,
     MusicAddExpireTime
@@ -73,21 +72,3 @@ export async function serve_music(id, db, redis) {
 
 }
 
-async function checkAudioSupport(music_path, name, output) {
-
-    const acceptedAudioTypes = ['.mp3', '.wav', '.flac', '.aac', '.ogg'];
-    const extname = path.extname(music_path);
-    if (acceptedAudioTypes.includes(extname)) {
-        return output;
-    }
-    else {
-        try{
-            await fs.access(path.join('..', 'public', 'music_tmp'));
-        }
-        catch{
-            await fs.mkdir(path.join('..', 'public', 'music_tmp'), { recursive: true });
-        }
-        const converted_path = await convertAudio(music_path, name);
-        return converted_path;
-    }
-}

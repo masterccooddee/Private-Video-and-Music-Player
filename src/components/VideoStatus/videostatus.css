@@ -13,6 +13,16 @@
     color: #3d333376;
 }
 
+.album-title {
+    font-size: 2rem;
+    color: #000000;
+    margin-bottom: 20px;
+    text-align: center;
+}
+body.dark-mode .album-title {
+    color: #ffffff;
+}
+
 body.dark-mode .notConverting {
     color: #ffffff;
 }
