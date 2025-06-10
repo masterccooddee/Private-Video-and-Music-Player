@@ -119,7 +119,7 @@ const VideoPlayer = () => {
         <h2 className="vp-title">{videoData?.name || '影片播放器'}</h2>
           {isLoading ? (
           <div className="vp-loading">
-            <TailChase size="40" speed="1.75" color={isDarkMode ? "white" : "black"} />
+            <TailChase size= "100" speed="1.75" color="white" />
           </div>
           ) : (
            <VideoJS options={options}/>
