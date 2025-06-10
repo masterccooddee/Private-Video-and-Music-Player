@@ -157,6 +157,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         if (trackList && trackList.length > 0) {
             // 專輯內切換
             const nextIndex = (currentTrackIndex + 1) % trackList.length;
+            document.querySelector('.track-item.active')?.classList.remove('active');
+            document.querySelector(`.track-item:nth-child(${nextIndex+1})`)?.classList.add('active');
             setCurrentTrackIndex(nextIndex);
             const nextTrack = trackList[nextIndex];
             const trackId = `${nextTrack.from_music_id}-${nextTrack.id}`;
@@ -174,6 +176,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 } else {
                     nextIndex = (currentRandomIndex + 1) % tracks.length;
                 }
+                document.querySelector('.track-item.active')?.classList.remove('active');
+                document.querySelector(`.track-item:nth-child(${nextIndex + 1})`)?.classList.add('active');
                 setCurrentRandomIndex(nextIndex);
                 const nextTrack = tracks[nextIndex];
                 if (nextTrack && nextTrack.id) {
@@ -195,6 +199,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         if (trackList && trackList.length > 0) {
             // 專輯內切換
             const prevIndex = (currentTrackIndex - 1 + trackList.length) % trackList.length;
+            document.querySelector('.track-item.active')?.classList.remove('active');
+            document.querySelector(`.track-item:nth-child(${prevIndex + 1})`)?.classList.add('active');
             setCurrentTrackIndex(prevIndex);
             const prevTrack = trackList[prevIndex];
             const trackId = `${prevTrack.from_music_id}-${prevTrack.id}`;
@@ -212,6 +218,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 } else {
                     prevIndex = (currentRandomIndex - 1 + tracks.length) % tracks.length;
                 }
+                document.querySelector('.track-item.active')?.classList.remove('active');
+                document.querySelector(`.track-item:nth-child(${prevIndex + 1})`)?.classList.add('active');
                 setCurrentRandomIndex(prevIndex);
                 const prevTrack = tracks[prevIndex];
                 if (prevTrack && prevTrack.id) {

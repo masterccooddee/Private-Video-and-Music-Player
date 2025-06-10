@@ -47,6 +47,7 @@ const MusicPlayer = () => {
     }, []);
 
     const handleTrackClick = (track, index) => {
+        document.querySelector('.track-item.active')?.classList.remove('active');
         setCurrentTrack(track);
         const trackId = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
         setMusicid(trackId);
