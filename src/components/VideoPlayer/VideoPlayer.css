@@ -57,6 +57,19 @@ body.dark-mode .vp-episodes-panel {
   transition: background 0.2s, color 0.2s, border 0.2s;
 }
 
+.vp-episode-btn:hover {
+  background: #1976d2;
+  color: #fff;
+  border: 2px solid #1976d2;
+}
+
+/* 深色模式下 hover */
+body.dark-mode .vp-episode-btn:hover {
+  background: #90caf9;
+  color: #222;
+  border: 2px solid #90caf9;
+}
+
 .vp-episode-btn.active {
   background: #1976d2;
   color: #fff;

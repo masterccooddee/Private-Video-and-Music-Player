@@ -391,6 +391,10 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         document.body.style.overflow = fullscreen ? 'hidden' : 'auto';
         return () => {
             document.body.style.overflow = 'auto';
+            // 添加一个延时，确保滚动条恢复
+            setTimeout(() => {
+                document.body.style.overflow = 'auto';
+            }, 100);
         };
     }, [fullscreen]);
 
@@ -463,6 +467,12 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         audioRef.current.src = '';
         setIsClosed(true);
         setFullscreen(false);
+        // 确保恢复滚动条
+        document.body.style.overflow = 'auto';
+        // 添加一个延时，确保滚动条恢复
+        setTimeout(() => {
+            document.body.style.overflow = 'auto';
+        }, 100);
     };
 
     const toggleFullscreen = () => setFullscreen(!fullscreen);
@@ -606,7 +616,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         );
     };
 
-    return { render, randomTracks, loadRandomTracks, setCurrentRandomIndex };
+    return { render, randomTracks, loadRandomTracks, setCurrentRandomIndex, setIsClosed };
 };
 
 export default useMusicPlayer;

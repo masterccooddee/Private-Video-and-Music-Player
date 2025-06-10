@@ -54,9 +54,11 @@ const MusicPlayer = () => {
         if (index !== undefined) {
             setCurrentRandomIndex(index);
         }
+        // 重置关闭状态
+        setIsClosed(false);
     };
     
-    const { render, randomTracks, loadRandomTracks, setCurrentRandomIndex } = useMusicPlayer(Musicid, currentTrack || musicData, musicData.episodes);
+    const { render, randomTracks, loadRandomTracks, setCurrentRandomIndex, setIsClosed } = useMusicPlayer(Musicid, currentTrack || musicData, musicData.episodes);
 
     useEffect(() => {
         if (showRandomTracks && randomTracks.length === 0) {

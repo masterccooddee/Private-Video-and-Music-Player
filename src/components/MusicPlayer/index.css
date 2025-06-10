@@ -12,6 +12,7 @@ body {
     width: 100%;
     height: auto;
     margin: 0;
+    overflow: auto; /* 當內容超出容器時顯示滾動條 */
 }
 
 .track-list {
