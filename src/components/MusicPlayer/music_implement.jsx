@@ -388,15 +388,19 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     }, [track && track.name, fullscreen]);
 
     useEffect(() => {
-        document.body.style.overflow = fullscreen ? 'hidden' : 'auto';
-        return () => {
+        if (fullscreen) {
+            document.body.style.overflow = 'hidden';
+        } else {
             document.body.style.overflow = 'auto';
-            // 添加一个延时，确保滚动条恢复
-            setTimeout(() => {
-                document.body.style.overflow = 'auto';
-            }, 100);
-        };
+        }
     }, [fullscreen]);
+
+    useEffect(() => {
+        if (isClosed) {
+            setFullscreen(false);
+            document.body.style.overflow = 'auto';
+        }
+    }, [isClosed]);
 
     const togglePlay = (e) => {
         e.stopPropagation();
@@ -467,12 +471,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         audioRef.current.src = '';
         setIsClosed(true);
         setFullscreen(false);
-        // 确保恢复滚动条
         document.body.style.overflow = 'auto';
-        // 添加一个延时，确保滚动条恢复
-        setTimeout(() => {
-            document.body.style.overflow = 'auto';
-        }, 100);
     };
 
     const toggleFullscreen = () => setFullscreen(!fullscreen);
