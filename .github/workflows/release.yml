@@ -11,5 +11,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check
-        run: pwd
+      - name: 建立MYFLIX、並加入Video, Music, MultiMediaPlayer資料夾
+        run: |
+            mkdir -p MYFLIX/Video
+            mkdir -p MYFLIX/Music
+            mkdir -p MYFLIX/MultiMediaPlayer
+            ls
+
+      - name: npm install
+        run: npm install
+
+      - name: npm run build
+        run: npm run build
+
+      - name: 複製Server到MultiMediaPlayer/Server資料夾
+        run: |
+            cp -r Server/* MYFLIX/MultiMediaPlayer/Server
+            ls MYFLIX/MultiMediaPlayer/Server
+
+      - name: 複製public到MultiMediaPlayer/public資料夾
+        run: |
+            cp -r public/* MYFLIX/MultiMediaPlayer/public
+            ls MYFLIX/MultiMediaPlayer/public
+
+      - name: 複製icons到MultiMediaPlayer/public/icons資料夾
+        run: |
+             cp -r icons/* MYFLIX/MultiMediaPlayer/public/icons
+             ls MYFLIX/MultiMediaPlayer/public/icons
+
+      - name: dist裡的東西複製到public資料夾
+        run: |
+            cp -r dist/* MYFLIX/MultiMediaPlayer/public
+            ls MYFLIX/MultiMediaPlayer/public
+
+      - name: npm uninstall
+        run: npm uninstall
+
+      - name: 只裝必要的套件
+        run: npm install --only=prod
+
+      - name: 複製node_modules
+        run: |
+            cp -r node_modules MYFLIX/MultiMediaPlayer
+            ls MYFLIX/MultiMediaPlayer/node_modules
+
+            
