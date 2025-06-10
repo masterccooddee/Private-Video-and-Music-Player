@@ -9,6 +9,8 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
     const containerRef = useRef(null);
     const progressBarRef = useRef(null);
     const volumeBarRef = useRef(null);
+    const randomTracksRef = useRef([]);
+    const currentRandomIndexRef = useRef(-1);
     const [track, setTrack] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [fullscreen, setFullscreen] = useState(false);
@@ -59,7 +61,7 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
 
     // 載入隨機音樂列表
     const loadRandomTracks = async () => {
-        if (isRequesting) return randomTracks;
+        if (isRequesting) return randomTracksRef.current;
         
         setIsRequesting(true);
         try {
@@ -70,11 +72,12 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
             const data = await response.json();
             console.log("random_music:", data);
             setRandomTracks(data);
+            randomTracksRef.current = data;
             return data;
         } catch (err) {
             console.error('載入失敗:', err.message);
             setError('無法載入音樂。');
-            return randomTracks;
+            return randomTracksRef.current;
         } finally {
             setIsRequesting(false);
         }
@@ -125,6 +128,38 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
             setIsPlaying(true);
             await audioRef.current.play();
             setError(null);
+
+            // 更新專輯播放索引
+            if (trackList && trackList.length > 0) {
+                const foundIndex = trackList.findIndex(track => {
+                    const trackIdentifier = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
+                    return trackIdentifier === musicId;
+                });
+                if (foundIndex !== -1) {
+                    console.log('更新專輯索引:', foundIndex);
+                    setCurrentTrackIndex(() => {
+                        console.log('Setting initial currentTrackIndex to:', foundIndex);
+                        return foundIndex;
+                    });
+                    // 更新 UI
+                    document.querySelector('.track-item.active')?.classList.remove('active');
+                    document.querySelector(`.track-item:nth-child(${foundIndex + 1})`)?.classList.add('active');
+                }
+            } else {
+                // 如果是隨機播放模式，更新 currentRandomIndex
+                const tracks = randomTracksRef.current;
+                if (tracks && tracks.length > 0) {
+                    const foundIndex = tracks.findIndex(track => {
+                        const trackIdentifier = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
+                        return trackIdentifier === musicId;
+                    });
+                    console.log('Found index in random tracks:', foundIndex);
+                    if (foundIndex !== -1) {
+                        currentRandomIndexRef.current = foundIndex;
+                        setCurrentRandomIndex(foundIndex);
+                    }
+                }
+            }
         } catch (err) {
             console.error('播放失敗:', err);
             setError('播放失敗。');
@@ -155,33 +190,49 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
         }
 
         if (trackList && trackList.length > 0) {
-            // 專輯內切換
-            const nextIndex = (currentTrackIndex + 1) % trackList.length;
-            document.querySelector('.track-item.active')?.classList.remove('active');
-            document.querySelector(`.track-item:nth-child(${nextIndex+1})`)?.classList.add('active');
-            setCurrentTrackIndex(nextIndex);
-            const nextTrack = trackList[nextIndex];
-            const trackId = `${nextTrack.from_music_id}-${nextTrack.id}`;
-            await playMusic(trackId, nextTrack);
+            // 使用函数式更新来获取最新的 currentTrackIndex
+            setCurrentTrackIndex(prevIndex => {
+                const nextIndex = (prevIndex + 1) % trackList.length;
+                console.log('nextIndex: ', nextIndex);
+                console.log('currentTrackIndex before update:', prevIndex);
+                
+                // 更新 UI
+                document.querySelector('.track-item.active')?.classList.remove('active');
+                document.querySelector(`.track-item:nth-child(${nextIndex+1})`)?.classList.add('active');
+                
+                const nextTrack = trackList[nextIndex];
+                const trackId = `${nextTrack.from_music_id}-${nextTrack.id}`;
+                // 使用 Promise 来处理异步操作
+                playMusic(trackId, nextTrack).catch(console.error);
+                
+                return nextIndex;
+            });
         } else {
             // 隨機音樂切換
-            let tracks = randomTracks;
+            let tracks = randomTracksRef.current;
+            // console.log('Current random index:', currentRandomIndexRef.current);
+            // console.log('Available tracks:', tracks);
+            
             if (tracks.length === 0) {
                 tracks = await loadRandomTracks();
             }
             if (tracks && tracks.length > 0) {
                 let nextIndex;
-                if (currentRandomIndex === -1) { // 如果是第一次從單曲切換到隨機播放
+                if (currentRandomIndexRef.current === -1) { // 如果是第一次從單曲切換到隨機播放
                     nextIndex = 0; // 播放隨機列表的第一首歌
                 } else {
-                    nextIndex = (currentRandomIndex + 1) % tracks.length;
+                    nextIndex = (currentRandomIndexRef.current + 1) % tracks.length;
                 }
+                console.log('Next index to play:', nextIndex);
+                
                 document.querySelector('.track-item.active')?.classList.remove('active');
                 document.querySelector(`.track-item:nth-child(${nextIndex + 1})`)?.classList.add('active');
+                currentRandomIndexRef.current = nextIndex;
                 setCurrentRandomIndex(nextIndex);
                 const nextTrack = tracks[nextIndex];
                 if (nextTrack && nextTrack.id) {
                     const trackId = nextTrack.from_music_id ? `${nextTrack.from_music_id}-${nextTrack.id}` : nextTrack.id;
+                    console.log('Playing next track:', trackId);
                     await playMusic(trackId, nextTrack);
                 }
             }
@@ -207,19 +258,20 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
             await playMusic(trackId, prevTrack);
         } else {
             // 隨機音樂切換
-            let tracks = randomTracks;
+            let tracks = randomTracksRef.current;
             if (tracks.length === 0) {
                 tracks = await loadRandomTracks();
             }
             if (tracks && tracks.length > 0) {
                 let prevIndex;
-                if (currentRandomIndex === -1) { // 如果是第一次從單曲切換到隨機播放
+                if (currentRandomIndexRef.current === -1) { // 如果是第一次從單曲切換到隨機播放
                     prevIndex = tracks.length - 1; // 播放隨機列表的最後一首歌
                 } else {
-                    prevIndex = (currentRandomIndex - 1 + tracks.length) % tracks.length;
+                    prevIndex = (currentRandomIndexRef.current - 1 + tracks.length) % tracks.length;
                 }
                 document.querySelector('.track-item.active')?.classList.remove('active');
                 document.querySelector(`.track-item:nth-child(${prevIndex + 1})`)?.classList.add('active');
+                currentRandomIndexRef.current = prevIndex;
                 setCurrentRandomIndex(prevIndex);
                 const prevTrack = tracks[prevIndex];
                 if (prevTrack && prevTrack.id) {
@@ -243,21 +295,40 @@ const useMusicPlayer = (Musicid, musicData, trackList = []) => {
                 return trackIdentifier === Musicid;
             });
             if (foundIndex !== -1) {
-                setCurrentTrackIndex(foundIndex);
+                console.log('foundIndex: ', foundIndex);
+                // 使用函数式更新
+                setCurrentTrackIndex(() => {
+                    console.log('Setting initial currentTrackIndex to:', foundIndex);
+                    return foundIndex;
+                });
             }
         }
 
         playMusic(Musicid, musicData);
 
+        // 添加音频结束事件监听
+        const handleEnded = () => {
+            // console.log('After randomTracks: ', randomTracksRef.current);
+            // console.log('Current random index before next:', currentRandomIndexRef.current);
+            handleNext({ stopPropagation: () => {} });
+        };
+        audioRef.current.addEventListener('ended', handleEnded);
+
         return () => {
             audioRef.current.pause();
             audioRef.current.src = '';
+            audioRef.current.removeEventListener('ended', handleEnded);
             if (requestTimeoutRef.current) {
                 clearTimeout(requestTimeoutRef.current);
             }
             document.body.style.overflow = 'auto';
         };
     }, [Musicid]);
+
+    // 添加监听 currentTrackIndex 变化的 useEffect
+    useEffect(() => {
+        console.log('currentTrackIndex changed to:', currentTrackIndex);
+    }, [currentTrackIndex]);
 
     useEffect(() => {
         const interval = setInterval(() => {
