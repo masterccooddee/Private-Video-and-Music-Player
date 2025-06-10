@@ -50,11 +50,14 @@ const MusicPlayer = () => {
         document.querySelector('.track-item.active')?.classList.remove('active');
         setCurrentTrack(track);
         const trackId = track.from_music_id ? `${track.from_music_id}-${track.id}` : track.id;
-        setMusicid(trackId);
+        // 先设置为空字符串，然后立即设置为实际的 trackId
+        setMusicid('');
+        setTimeout(() => {
+            setMusicid(trackId);
+        }, 0);
         if (index !== undefined) {
             setCurrentRandomIndex(index);
         }
-        // 重置关闭状态
         setIsClosed(false);
     };
     
