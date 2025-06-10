@@ -22,7 +22,7 @@ jobs:
           mkdir MYFLIX\MultiMediaPlayer
           mkdir MYFLIX\MultiMediaPlayer\Server
           mkdir MYFLIX\MultiMediaPlayer\public
-          dir
+          ls
 
       - name: npm install
         run: npm install
@@ -34,7 +34,7 @@ jobs:
         run: |
           xcopy Server MYFLIX\MultiMediaPlayer\Server /E /I /Q
           dir MYFLIX\MultiMediaPlayer\Server
-          rename MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
+          Rename-Item MYFLIX\MultiMediaPlayer\Server\.env.example MYFLIX\MultiMediaPlayer\Server\.env
 
       - name: 複製public到MultiMediaPlayer\public資料夾
         run: |
