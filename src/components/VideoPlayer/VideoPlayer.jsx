@@ -69,6 +69,25 @@ const VideoPlayer = () => {
     
   }, [videoID]);
 
+  const playerRef = useRef(null);
+
+  //2. 監聽鍵盤事件
+  useEffect(() => {
+      const handleKeyDown = (e) => {
+          if (!playerRef.current) return;
+          if (e.key === 'ArrowRight') {
+              const current = playerRef.current.currentTime();
+              playerRef.current.currentTime(current + 5);
+          }
+          if (e.key === 'ArrowLeft') {
+              const current = playerRef.current.currentTime();
+              playerRef.current.currentTime(Math.max(0, current - 5));
+          }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const currentEpIdRef = useRef(currentEpId);
   useEffect(() => {
       currentEpIdRef.current = currentEpId;
@@ -122,7 +141,7 @@ const VideoPlayer = () => {
             <TailChase size= "100" speed="1.75" color="white" />
           </div>
           ) : (
-           <VideoJS options={options}/>
+           <VideoJS options={options} playerRef={playerRef}/>
           )}
     
         <TabView>

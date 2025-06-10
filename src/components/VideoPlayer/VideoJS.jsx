@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import SubtitlesOctopus from "../../../public/libass-wasm/dist/js/subtitles-octopus.js";
 
 let octopusInstance = null; // 用於存儲 SubtitlesOctopus 實例
@@ -89,11 +89,11 @@ function setupSubtitles(player, options) {
     });
 }
 
-export const VideoJS = (props) => {
-    const videoRef = React.useRef(null);;
-    const playerRef = React.useRef(null);
+const VideoJS = forwardRef((props, ref) => {
+    const videoRef = useRef(null);;
+    const playerRef = useRef(null);
     const { options, onReady } = props;
-    React.useEffect(() => {
+    useEffect(() => {
         console.log("something changed in VideoJS", options);
         // 檢查是不是第一次渲染，並且 sources 有 src
         if (!playerRef.current && options.sources[0].src) {
@@ -121,7 +121,9 @@ export const VideoJS = (props) => {
         }
     }, [options, onReady]);
 
-    React.useEffect(() => {
+    useImperativeHandle(ref, () => playerRef.current, []);
+
+    useEffect(() => {
         const player = playerRef.current;
         return () => {
             if (player) {
@@ -141,6 +143,6 @@ export const VideoJS = (props) => {
             ></video>
         </div>
     );
-};
+});
 
 export default VideoJS;
