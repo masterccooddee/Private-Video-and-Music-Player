@@ -34,9 +34,15 @@ function Topbar({ isDarkMode }) {
   const handleClick = async (item) => {
     setSearchTerm(item.name || item.title || '');
     setShowSuggestions(false);
-    console.log('item:', item);
-    console.log('item type:', item.type);
-
+    // console.log('item:', item);
+    // console.log('item type:', item.type);
+    const saveRecent = (item) => {
+        const existing = JSON.parse(localStorage.getItem('recentlyWatched') || '[]');
+        const filtered = existing.filter(i => i.id !== item.id || i.type !== item.type);
+        const updated = [item, ...filtered].slice(0, 10); // 最多紀錄10筆
+        localStorage.setItem('recentlyWatched', JSON.stringify(updated));
+    };
+    saveRecent(item);    
     if (item.type === 'video') {
       navigate('/video', {
         state: {
