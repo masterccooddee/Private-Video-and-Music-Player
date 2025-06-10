@@ -87,6 +87,8 @@ subscriber.on('pmessage', (pattern, channel, message) => {
 // 監聽關閉事件
 process.on('SIGINT', async () => {
     console.log('Received SIGINT. Closing database and Redis connections...');
+    await redis.flushall(); // 清除Redis中的所有鍵
+    await subscriber.quit(); // 關閉訂閱者
     await db.close();
     await redis.quit();
     process.exit(0);
