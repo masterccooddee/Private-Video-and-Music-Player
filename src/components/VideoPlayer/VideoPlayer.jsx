@@ -6,22 +6,25 @@ import { TailChase } from 'ldrs/react'
 import 'ldrs/react/TailChase.css'
 import './VideoPlayer.css';
 
-// Default values shown
-
-
 const VideoPlayer = () => {
   const location = useLocation();
   const videoData = location.state || {};
-  const [currentEpId, setCurrentEpId] = useState(
-    videoData.episodes && videoData.episodes[0] ? videoData.episodes[0].id : null
-  );
-
   let videoID = '';
-  if (videoData.episodes !== undefined) {
-    videoID = String(videoData.id) + '-' + String(videoData.episodes[0].id);
-  } else {
-    videoID = String(videoData.id);
+  const [currentEpId, setCurrentEpId] = useState(() => {
+    // 嘗試從 localStorage 讀取
+    const saved = localStorage.getItem(`last-ep-${videoData.id}`);
+    if (saved && videoData.episodes?.some(ep => ep.id === Number(saved))) {
+      videoID = String(videoData.id) + '-' + String(Number(saved)+1);
+      return Number(saved)+1;
+    }
+    // 沒有就預設第一集
+    return videoData.episodes && videoData.episodes[0] ? videoData.episodes[0].id : null;
+  });
+
+  if(videoData.episodes === undefined || videoData.episodes === null) {
+    videoID = String(videoData.id); // 如果沒有 episodes，就直接使用 videoData.id
   }
+  
 
   const videooptions = {
     controls: true,
@@ -74,6 +77,7 @@ const VideoPlayer = () => {
     
   }, [videoID]);
 
+  // Handle keyboard shortcuts for seeking
   useEffect(() => {
     const handleKeyDown = (e) => {
       const player = playerRef.current;
@@ -82,7 +86,7 @@ const VideoPlayer = () => {
       if (e.key === 'ArrowRight') {
         player.currentTime(player.currentTime() + 5);
         setSeekDisplay('+5s');
-        console.log('Seeked forward by 5 seconds');
+        //console.log('Seeked forward by 5 seconds');
       }
       if (e.key === 'ArrowLeft') {
         player.currentTime(Math.max(0, player.currentTime() - 5));
@@ -101,10 +105,13 @@ const VideoPlayer = () => {
     }
   }, [seekDisplay]);
 
+  // Handle video change
   const handleChangeVideo = (newSrc, epId) => {
     setIsLoading(true);
     setCurrentEpId(epId);
-
+    // 記錄到 localStorage
+    localStorage.setItem(`last-ep-${videoData.id}`, epId);
+  
     fetch(`/video/video:${newSrc}`)
       .then(res => res.json())
       .then(data => {
@@ -129,9 +136,12 @@ const VideoPlayer = () => {
       });
   };
 
+  // 將 episodes 按季數分組
+  // 如果沒有 episodes，則使用一個空的物件
   const episodesBySeason = {};
   if (Array.isArray(videoData.episodes)) {
     videoData.episodes.forEach(ep => {
+      // 確保季數存在且格式正確
       if (ep.season === undefined || ep.season === 'NONE') ep.season = 'S1';
       const season = ep.season;
       if (!episodesBySeason[season]) episodesBySeason[season] = [];
@@ -139,10 +149,10 @@ const VideoPlayer = () => {
     });
   }
 
+  const lastWatchedEpId = Number(localStorage.getItem(`last-ep-${videoData.id}`));
   return (
     <div className="vp-root">
       <h2 className="vp-title">{videoData?.name || '影片播放器'}</h2>
-      {seekDisplay && <div className="seek-overlay">{seekDisplay}</div>}
       {isLoading ? (
         <div className="vp-loading">
           <TailChase size="100" speed="1.75" color="white" />
@@ -166,16 +176,21 @@ const VideoPlayer = () => {
                     handleChangeVideo(String(videoData.id) + '-' + String(ep.id), ep.id)
                   }
                   className={
-                    'vp-episode-btn' + (currentEpId === ep.id ? ' active' : '')
+                    'vp-episode-btn' +
+                    (currentEpId === ep.id ? ' active' : '') +
+                    (lastWatchedEpId === ep.id ? ' last-watched' : '')
                   }
-                >
+                  > 
                   {ep.name || String(idx + 1)}
+                  {lastWatchedEpId === ep.id && (
+                    <span className="vp-last-watched-tag">上次觀看</span>
+                  )}
                 </button>
               ))}
             </div>
           </TabPanel>
-        ))}
-      </TabView>
+       ))}
+     </TabView>
     </div>
   );
 };
