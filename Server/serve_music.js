@@ -45,7 +45,7 @@ export async function serve_music(id, db, redis) {
             };
             audio_info = JSON.stringify(audio_info);
             // console.log('output:', output);
-            redis.set(key, audio_info, 'EX', MusicExpireTime); // Cache for 24 hours
+            redis.set(key, audio_info, 'EX', MusicExpireTime); // 設置Redis緩存
             return audio_info;
         }
         else {
@@ -62,7 +62,7 @@ export async function serve_music(id, db, redis) {
                 cover_url: music.cover,
             };
             audio_info = JSON.stringify(audio_info);
-            redis.set(key, audio_info, 'EX', MusicExpireTime); // Cache for 24 hours
+            redis.set(key, audio_info, 'EX', MusicExpireTime); // 設置Redis緩存
             return audio_info;
         }
 

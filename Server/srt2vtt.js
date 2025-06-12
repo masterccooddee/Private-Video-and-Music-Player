@@ -43,8 +43,3 @@ export default async function SRT2WVTT(input_path) {
         throw err;
     }
 }
-
-// console.log(checkEncoding('../../Video/The Great Gatsby/The.Great.Gatsby.2013.1080p.BluRay.x264.srt'));
-
-// let stream = await SRT2WVTT('../../Video/The Great Gatsby/The.Great.Gatsby.2013.1080p.BluRay.x264.srt');
-// stream.pipe(process.stdout);

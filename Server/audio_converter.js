@@ -77,6 +77,3 @@ export async function checkAudioSupport(music_path, name, output) {
 
 }
 
-
-// let audiopath = await convertAudio('D:\\School\\3\\JS\\Project_MultiMediaPlayer\\Music\\003. 天使にふれたよ!.m4a', '003. 天使にふれたよ!');
-// console.log(audiopath);

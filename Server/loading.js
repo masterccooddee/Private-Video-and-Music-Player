@@ -27,17 +27,3 @@ export function loading(now, total, startTime) {
     process.stdout.write(str);
 }
 
-// process.stdout.write('\x1b[?25l');
-// let now = 0;
-// let startTime = Date.now(); // 開始時間
-// let timer = setInterval(() => {
-//     let total = 100;
-//     loading(now,total, startTime);
-//     now += 1;
-//     if (now > total) {
-//         clearInterval(timer);
-//         process.stdout.write('\x1b[?25h');
-//         console.log('\nDone!');
-//         process.exit(0);
-//     }
-// }, 100);

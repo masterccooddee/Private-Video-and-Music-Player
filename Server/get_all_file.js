@@ -53,6 +53,3 @@ export async function get_from_type(db, type = '') {
 
 }
 
-// let output =await get_all_file('media.db');
-// console.log(output);
-// console.log(await get_from_type('media.db', 'music,music_series'));

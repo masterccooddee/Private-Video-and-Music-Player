@@ -603,8 +603,3 @@ async function findsubtitlesOneVideo(video_folder, db, name, filepath, have_Fold
     update_sub.run({ subtitle: sub2db, name: name })
 
 }
-
-
-// let file = 'C:\\Users\\arthu\\Desktop\\School\\3\\JS\\Project\\Music\\023. 時を刻む唄.mp3';
-// let metadata = await parseFile(file);
-// console.log(metadata);
