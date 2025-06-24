@@ -18,6 +18,8 @@ const VideoPlayer = () => {
       return Number(saved)+1;
     }
     // 沒有就預設第一集
+    videoID = String(videoData.id) + '-' + String(videoData.episodes?.[0]?.id);
+    localStorage.setItem(`last-ep-${videoData.id}`, '1');
     return videoData.episodes && videoData.episodes[0] ? videoData.episodes[0].id : null;
   });
 
