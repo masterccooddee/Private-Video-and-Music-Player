@@ -89,7 +89,8 @@ export async function _executeConversion(inputFilePath, outputDir) {
                             
                         }
                     });
-                    loading(Math.ceil(progress.percent), 100, startTime);
+                    // if (progress.percent >= 0)
+                    //     loading(Math.ceil(progress.percent), 100, startTime);
                 })
                 .on('start', () => {
                     console.log('Start to convert to DASH of', inputFilePath);

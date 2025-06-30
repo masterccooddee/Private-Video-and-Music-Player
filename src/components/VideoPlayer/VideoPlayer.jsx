@@ -29,10 +29,22 @@ const VideoPlayer = () => {
   
 
   const videooptions = {
-    controls: true,
+    // controls: true,
     autoplay: false,
     preload: 'auto',
     fluid: true,
+    playbackRates: [0.5, 1, 1.5, 2],
+    controlbar:{
+        children: {
+            playToggle: true,
+            currentTimeDisplay: true,
+            timeDivider: true,
+            durationDisplay: true,
+            progressControl: true,
+            volumePanel: { inline: false },
+            fullscreenToggle: true,
+        },
+    },
     sources: [
       {
         src: '', // 會在後面更新

@@ -102,6 +102,7 @@ const VideoJS = forwardRef((props, ref) => {
                 player.log("player is ready");
                 onReady && onReady(player);
                 setupSubtitles(player, options); // 設置字幕
+                player.mobileUi();
             }));
             player.on('error', () => {
                 console.error('Video.js encountered an error:', player.error());
